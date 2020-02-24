@@ -1,0 +1,17 @@
+doctype html
+html lang="en" 
+    head
+        meta charset="utf-8" /
+        meta content="IE=edge" http-equiv="X-UA-Compatible" /
+        meta content="width=device-width, initial-scale=1.0" name="viewport" /
+        title OpenCloud
+        link href="css/style.css" rel="stylesheet" /
+        meta content=("Upload & Download files") name="description" /
+        script src="script.js"
+    body
+        main
+            form.upload method='post' action='php/upload.php' enctype="multipart/form-data"
+                input type="file" name='files[]' multiple='true'
+                input type="submit" name='submit'
+        
+        
