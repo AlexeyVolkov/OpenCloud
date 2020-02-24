@@ -3,7 +3,7 @@ require 'core/db.php';
 
 define('HOST', 'localhost');
 define('USER', 'root');
-define('PASSWORD', '1');
+define('PASSWORD', '');
 define('DATABASE', 'open_cloud');
 
 if ($_POST['files_list']) {
