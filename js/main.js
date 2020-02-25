@@ -18,7 +18,6 @@ ready(function () {
         // AJAX Form Submit Framework
         console.debug('AJAX Form sent');
         AJAXSubmit(formUploadElem);
-        // return false;
     });
 });
 ready(function () {

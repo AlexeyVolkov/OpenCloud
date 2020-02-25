@@ -11,8 +11,15 @@ html lang="en"
     body
         main
             form.upload method='post' action='php/upload.php' enctype="multipart/form-data"
-                input type="file" name='files[]' multiple='true'
-                input type="submit" name='submit'
+                fieldset.form__fieldset
+                    legend.form__legend Upload Your File
+                    dl.form-group
+                        dt.form__dt
+                            label for="file" Choose the file to upload:
+                        dd.form__dd
+                            input#file type="file" name='files[]' multiple='true'
+                    dl.form-group
+                        dt.form__dt
+                        dd.form__dd
+                            input type="submit" name='submit'                
             table.files
-        
-        

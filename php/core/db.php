@@ -106,8 +106,6 @@ if (!function_exists('Opencloud__db_get_extension_id')) {
     {
         // filter input
         $extension__string = filter_var(trim($extension__string), FILTER_SANITIZE_STRING);
-        // set defaults
-        $return_extension__id = 1; // undefined
 
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare("SELECT `id` FROM `extensions` WHERE `type`=? LIMIT 1;")) {
@@ -123,19 +121,20 @@ if (!function_exists('Opencloud__db_get_extension_id')) {
 
             /* fetch value */
             $stmt->fetch();
-            if (1 < $extension__id) {
-                $return_extension__id = $extension__id;
+
+            /* close statement */
+            $stmt->close();
+            if ($extension__id && 0 < $extension__id) {
+                return $extension__id;
             } else {
                 // Add new Type to DB
                 Opencloud__db_put_extension($mysqli, $extension__string);
                 // Get an ID again
-                Opencloud__db_get_extension_id($mysqli, $extension__string);
+                return Opencloud__db_get_extension_id($mysqli, $extension__string);
             }
-            /* close statement */
-            $stmt->close();
         }
 
-        return $return_extension__id;
+        return false;
     }
 }
 

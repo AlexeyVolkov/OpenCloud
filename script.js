@@ -44,6 +44,7 @@ var AJAXSubmit = function () {
   function ajaxSuccess() {
     /* console.log("AJAXSubmit - Success!"); */
     console.log(this.responseText);
+    location.reload();
     /* you can get the serialized data through the "submittedData" custom property: */
 
     /* console.log(JSON.stringify(this.submittedData)); */
@@ -233,7 +234,7 @@ ready(function () {
     e.preventDefault(); // AJAX Form Submit Framework
 
     console.debug('AJAX Form sent');
-    AJAXSubmit(formUploadElem); // return false;
+    AJAXSubmit(formUploadElem);
   });
 });
 ready(function () {

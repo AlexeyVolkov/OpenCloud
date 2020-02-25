@@ -15,11 +15,11 @@ if ($_GET && isset($_GET['download_file__id'])) {
     $download_file__id = filter_input(INPUT_GET, 'download_file__id', FILTER_SANITIZE_NUMBER_INT);
 
     $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
-    $files = Opencloud__db_get_files($mysql);
+    $files = Opencloud__db_get_files($mysql, 1, $download_file__id);
 
     foreach ($files as $file) {
         $hash__path = TARGET_DIR . $file['hash__name'];
-        $type = Opencloud__db_get_extension_type($mysql, $file['id']);
+        $type = Opencloud__db_get_extension_type($mysql, $file['extension__id']);
         header('Content-Type: ' . $type);
         header("Content-disposition: attachment; filename=\"" . basename($file['real_name']) . "\"");
         readfile($hash__path);
