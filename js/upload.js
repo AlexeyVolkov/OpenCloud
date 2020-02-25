@@ -19,7 +19,7 @@ ready(function () {
         e.preventDefault();
 
         // AJAX Form Submit Framework
-        console.debug('AJAX Form Submit Framework');
+        console.debug('AJAX Form sent');
         AJAXSubmit(formUploadElem);
         // return false;
     });
@@ -49,7 +49,7 @@ ready(function () {
             // 3. Success!
             let files = JSON.parse(this.response);
             // if the files exists
-            if (null == files || undefined == files) {
+            if (!files || null == files || undefined == files || 0 == files.length) {
                 console.debug("Cannot send request: ");
                 console.debug(formData);
                 return;
