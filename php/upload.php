@@ -3,32 +3,28 @@ require 'core/core.php';
 require 'variables.php';
 require 'core/db.php';
 
-// VARIABLES
-$_target_dir = "E:/Sync/Work/2020/2job/napopravku/OpenCloud/files/";
-$_file_name = 'files';
-
 /**
  * MAIN CODE BEGINs here
  * 
  * @link https://www.w3schools.com/php/php_file_upload.asp
  */
-if ($_FILES && isset($_FILES[$_file_name]) && !empty($_FILES[$_file_name])) {
-    $file_ary = Opencloud__reArrayFiles($_FILES[$_file_name]);
+if ($_FILES && isset($_FILES[POST_FILE_FIELD]) && !empty($_FILES[POST_FILE_FIELD])) {
+    $file_ary = Opencloud__reArrayFiles($_FILES[POST_FILE_FIELD]);
 
     foreach ($file_ary as $file) {
         if (0 >= $file['size']) {
             continue; // skip empty files
         }
-        $target_file = $_target_dir . basename($file['name']);
+        $target_file = TARGET_DIR . basename($file['name']);
         $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
         /**
          * Hash for security
          */
         $hash__file =  hash_file('md5', $file['tmp_name']);
         $hash__name = hash('md5', $file['name']);
-        $hash__path = $_target_dir . $hash__name;
+        $hash__path = TARGET_DIR . $hash__name;
 
-        if (!Opencloud__exist($hash__path, $_target_dir)) {
+        if (!Opencloud__exist($hash__path, TARGET_DIR)) {
             // 1. Put Info to DB
             $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
 

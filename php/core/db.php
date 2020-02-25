@@ -20,29 +20,44 @@ if (!function_exists('Opencloud__db_close')) {
 }
 
 if (!function_exists('Opencloud__db_get_files')) {
-    function Opencloud__db_get_files($mysqli, $user_id = 1)
+    function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0)
     {
         $files = false;
+        $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
+        $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
+
+        $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? LIMIT 1;";
+
+        if (0 == $getID) {
+            $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`user_id`=?;";
+        }
         /* create a prepared statement */
-        if ($stmt = $mysqli->prepare("SELECT `upload_date`, `user_id`, `real_name` FROM `files` WHERE `files`.`user_id`=?;")) {
+        if ($stmt = $mysqli->prepare($sql)) {
 
             /* bind parameters for markers */
-            $stmt->bind_param("i", $user_id);
+            if (0 == $getID) {
+                $stmt->bind_param("i", $user_id);
+            } else {
+                $stmt->bind_param("i", $getID);
+            }
 
             /* execute query */
             $stmt->execute();
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_id, $real_name);
+            $stmt->bind_result($upload_date, $user_id, $real_name, $id, $hash__name, $extension__id);
 
             /* fetch values */
             while ($stmt->fetch()) {
-                $files[] = array($upload_date, $user_id, $real_name);
+                $files[] = array(
+                    'upload_date' => $upload_date,
+                    'user_id' => $user_id,
+                    'real_name' => $real_name,
+                    'id' => $id,
+                    'hash__name' => $hash__name,
+                    'extension__id' => $extension__id
+                );
             }
-
-            /* instead of bind_result: */
-            // $files = $stmt->get_result();
-
             /* close statement */
             $stmt->close();
         }
@@ -145,5 +160,38 @@ if (!function_exists('Opencloud__db_put_extension')) {
         }
 
         return $flag;
+    }
+}
+
+if (!function_exists('Opencloud__db_get_extension_type')) {
+    function Opencloud__db_get_extension_type($mysqli, $extension__id)
+    {
+        // filter input
+        $extension__id = filter_var(trim($extension__id), FILTER_SANITIZE_NUMBER_INT);
+        // set defaults
+        $return_extension__type = 'text/plain'; // undefined
+
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare("SELECT `type` FROM `extensions` WHERE `id`=? LIMIT 1;")) {
+
+            /* bind parameters for markers */
+            $stmt->bind_param("s", $extension__id);
+
+            /* execute query */
+            $stmt->execute();
+
+            /* bind result variables */
+            $stmt->bind_result($extension__type);
+
+            /* fetch value */
+            $stmt->fetch();
+            if (1 < strlen($extension__type)) {
+                $return_extension__type = $extension__type;
+            }
+            /* close statement */
+            $stmt->close();
+        }
+
+        return $return_extension__type;
     }
 }

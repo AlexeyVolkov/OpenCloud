@@ -215,13 +215,10 @@ function post_ajax(url, data) {
 }
 
 ready(function () {
-  // Uploading Form Path
-  const formQuery = '.upload';
-  const filesListQuery = '.files';
   /**
    * UPLOAD FORM HANDLER
    */
-  // grab reference to form
+  const formQuery = '.upload'; // grab reference to form
 
   const formUploadElem = document.querySelector(formQuery); // if the form exists
 
@@ -238,10 +235,12 @@ ready(function () {
     console.debug('AJAX Form sent');
     AJAXSubmit(formUploadElem); // return false;
   });
+});
+ready(function () {
   /**
    * FILES` LIST HANDLER
    */
-  // grab reference to table
+  const filesListQuery = '.files'; // grab reference to table
 
   const tableFilesElem = document.querySelector(filesListQuery); // if the table exists
 
@@ -264,6 +263,7 @@ ready(function () {
   request.onload = function () {
     if (this.status >= 200 && this.status < 400) {
       // 3. Success!
+      // console.debug(this.response);
       let files = JSON.parse(this.response); // if the files exists
 
       if (!files || null == files || undefined == files || 0 == files.length) {
@@ -279,8 +279,9 @@ ready(function () {
         let cell1 = row.insertCell(0);
         let cell2 = row.insertCell(1); // Add some text to the new cells:
 
-        cell1.innerHTML = element[0];
-        cell2.innerHTML = element[2];
+        cell1.innerHTML = element['upload_date'];
+        cell2.innerHTML = '<a href="php/download.php?download_file__id=' + element['id'] + '" class="link link_download">' + element['real_name'] + '</a>';
+        setDownloadLinksHandler(); // console.debug(element);
       });
     } else {
       // We reached our target server, but it returned an error
@@ -290,4 +291,21 @@ ready(function () {
 
   request.send(formData);
 });
+
+function setDownloadLinksHandler() {} // /**
+//  * FILES DOWNLOAD HANDLER
+//  */
+// const downloadLinkQuery = '.link_download';
+// // grab reference to links
+// const downloadLinks = document.querySelectorAll(downloadLinkQuery);
+// // if the links exist
+// if (!downloadLinks || null == downloadLinks || undefined == downloadLinks || 0 == downloadLinks.length) {
+//     console.debug("Cannot find download links: " + downloadLinkQuery);
+//     return;
+// }
+// downloadLinks.forEach(element => {
+//     element.addEventListener('click', function () {
+//         console.debug(this.dataset.file__id);
+//     });
+// });
 //# sourceMappingURL=script.js.map
