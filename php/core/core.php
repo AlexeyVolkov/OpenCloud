@@ -6,6 +6,13 @@ if (!function_exists('Opencloud__upload')) {
     }
 }
 
+if (!function_exists('Opencloud__remove')) {
+    function Opencloud__remove($target_file)
+    {
+        return unlink($target_file);
+    }
+}
+
 if (!function_exists('Opencloud__exist')) {
     function Opencloud__exist($target_file, $target_dir = "files/")
     {

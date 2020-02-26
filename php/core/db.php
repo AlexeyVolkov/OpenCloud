@@ -194,3 +194,64 @@ if (!function_exists('Opencloud__db_get_extension_type')) {
         return $return_extension__type;
     }
 }
+
+if (!function_exists('Opencloud__db_get_filePathById')) {
+    function Opencloud__db_get_filePathById($mysqli, $remove_file__id)
+    {
+        // filter input
+        $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
+
+        // set defaults
+        $return_path = false;
+
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare("SELECT `hash__name` FROM `files` WHERE `id`=? LIMIT 1;")) {
+
+            /* bind parameters for markers */
+            $stmt->bind_param("i", $remove_file__id);
+
+            /* execute query */
+            $stmt->execute();
+
+            /* bind result variables */
+            $stmt->bind_result($db_path);
+
+            /* fetch value */
+            $stmt->fetch();
+            if (1 < strlen($db_path)) {
+                $return_path = $db_path;
+            }
+            /* close statement */
+            $stmt->close();
+        }
+
+        return TARGET_DIR . $return_path;
+    }
+}
+
+if (!function_exists('Opencloud__db_delete_file')) {
+    function Opencloud__db_delete_file($mysqli, $remove_file__id)
+    {
+        // filter input
+        $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
+        // set defaults
+        $flag = false;
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare(
+            "DELETE FROM `files` WHERE `files`.`id` = ?;"
+        )) {
+            /* bind parameters for markers */
+            $stmt->bind_param("i", $remove_file__id);
+            /* execute query */
+            $stmt->execute();
+            /* close statement */
+            $stmt->close();
+
+            $flag = true;
+        } else {
+            print 'Cannot prepare SQL @ Opencloud__db_delete_file';
+        }
+
+        return $flag;
+    }
+}

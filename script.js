@@ -42,7 +42,7 @@ if (!XMLHttpRequest.prototype.sendAsBinary) {
 
 var AJAXSubmit = function () {
   function ajaxSuccess() {
-    /* console.log("AJAXSubmit - Success!"); */
+    // console.log("AJAXSubmit - Success!");
     console.log(this.responseText);
     location.reload();
     /* you can get the serialized data through the "submittedData" custom property: */
@@ -214,13 +214,21 @@ function post_ajax(url, data) {
 
   request.send(data);
 }
+/**
+ * Functions Run After Refresh
+ */
 
-ready(function () {
-  /**
-   * UPLOAD FORM HANDLER
-   */
-  const formQuery = '.upload'; // grab reference to form
 
+function runAfterJSReady() {
+  handleRenameLinks();
+}
+/**
+ * UPLOAD FORM HANDLER
+ */
+
+
+function handleUploadForm(formQuery = '.upload') {
+  // grab reference to form
   const formUploadElem = document.querySelector(formQuery); // if the form exists
 
   if (null == formUploadElem || undefined == formUploadElem) {
@@ -231,18 +239,20 @@ ready(function () {
 
   formUploadElem.addEventListener('submit', e => {
     // on form submission, prevent default
-    e.preventDefault(); // AJAX Form Submit Framework
+    e.preventDefault();
+    formUploadElem.style.cursor = 'wait'; // AJAX Form Submit Framework
 
     console.debug('AJAX Form sent');
     AJAXSubmit(formUploadElem);
   });
-});
-ready(function () {
-  /**
-   * FILES` LIST HANDLER
-   */
-  const filesListQuery = '.files'; // grab reference to table
+}
+/**
+ * FILES` LIST HANDLER
+ */
 
+
+function fillFileTable(filesListQuery = '.files tbody') {
+  // grab reference to table
   const tableFilesElem = document.querySelector(filesListQuery); // if the table exists
 
   if (null == tableFilesElem || undefined == tableFilesElem) {
@@ -278,11 +288,16 @@ ready(function () {
         let row = tableFilesElem.insertRow(0); // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
 
         let cell1 = row.insertCell(0);
-        let cell2 = row.insertCell(1); // Add some text to the new cells:
+        let cell2 = row.insertCell(1);
+        let cell3 = row.insertCell(2);
+        let cell4 = row.insertCell(3); // Add some text to the new cells:
 
         cell1.innerHTML = element['upload_date'];
         cell2.innerHTML = '<a href="php/download.php?download_file__id=' + element['id'] + '" class="link link_download">' + element['real_name'] + '</a>';
-        setDownloadLinksHandler(); // console.debug(element);
+        cell3.innerHTML = '<a href="#" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
+        cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove">Remove</a>'; // run content-rely code
+
+        runAfterJSReady();
       });
     } else {
       // We reached our target server, but it returned an error
@@ -291,22 +306,36 @@ ready(function () {
   };
 
   request.send(formData);
-});
+}
+/**
+ * Rename Links Event
+ */
 
-function setDownloadLinksHandler() {} // /**
-//  * FILES DOWNLOAD HANDLER
-//  */
-// const downloadLinkQuery = '.link_download';
-// // grab reference to links
-// const downloadLinks = document.querySelectorAll(downloadLinkQuery);
-// // if the links exist
-// if (!downloadLinks || null == downloadLinks || undefined == downloadLinks || 0 == downloadLinks.length) {
-//     console.debug("Cannot find download links: " + downloadLinkQuery);
-//     return;
-// }
-// downloadLinks.forEach(element => {
-//     element.addEventListener('click', function () {
-//         console.debug(this.dataset.file__id);
-//     });
-// });
+
+function handleRenameLinks(linksQuery = '.link_rename') {
+  // grab reference to form
+  const linksElem = document.querySelectorAll(linksQuery); // if the form exists
+
+  if (!linksElem || null == linksElem || undefined == linksElem || 0 == linksElem.length) {
+    console.debug("Cannot find links: " + linksQuery);
+    return;
+  }
+
+  linksElem.forEach(function (linkElem) {
+    // rename click handler
+    linkElem.addEventListener('click', function (event) {
+      event.stopPropagation();
+      event.preventDefault();
+      console.debug(event);
+      let sign = prompt("Rename File", linkElem.dataset.file__name);
+      console.log(sign);
+      return;
+    }, true);
+  });
+}
+
+ready(function () {
+  handleUploadForm();
+  fillFileTable();
+});
 //# sourceMappingURL=script.js.map
