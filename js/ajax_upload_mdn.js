@@ -42,7 +42,8 @@ var AJAXSubmit = (function () {
     function ajaxSuccess() {
         // console.log("AJAXSubmit - Success!");
         console.log(this.responseText);
-        location.reload();
+        // location.reload();
+        runRefresh();
         /* you can get the serialized data through the "submittedData" custom property: */
         /* console.log(JSON.stringify(this.submittedData)); */
     }

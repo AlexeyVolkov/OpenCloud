@@ -20,11 +20,12 @@ if (!function_exists('Opencloud__db_close')) {
 }
 
 if (!function_exists('Opencloud__db_get_files')) {
-    function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0)
+    function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
     {
         $files = false;
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
         $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
+        $parent_folder_id = filter_var(trim($parent_folder_id), FILTER_SANITIZE_NUMBER_INT);
 
         $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? LIMIT 1;";
 
@@ -55,11 +56,41 @@ if (!function_exists('Opencloud__db_get_files')) {
                     'real_name' => $real_name,
                     'id' => $id,
                     'hash__name' => $hash__name,
-                    'extension__id' => $extension__id
+                    'extension__id' => $extension__id,
+                    'type' => 'file'
                 );
             }
             /* close statement */
             $stmt->close();
+
+            $sql = "SELECT `id`, `name` FROM `folders` WHERE `folders`.`parent_folder_id` = ? AND `folders`.`user__id` = ?;";
+            /* create a prepared statement */
+            if ($stmt = $mysqli->prepare($sql)) {
+                /* bind parameters for markers */
+                $stmt->bind_param("ii", $parent_folder_id,  $user_id);
+                /* execute query */
+                $stmt->execute();
+                /* bind result variables */
+                $stmt->bind_result($folder__id, $folder__name);
+                /* fetch values */
+                while ($stmt->fetch()) {
+                    $files[] = array(
+                        'upload_date' => '0000-00-00 00:00:00',
+                        'user_id' => $user_id,
+                        'real_name' => $folder__name,
+                        'id' => $folder__id,
+                        'hash__name' => '',
+                        'extension__id' => 0,
+                        'type' => 'folder'
+                    );
+                }
+                /* close statement */
+                $stmt->close();
+            } else {
+                return 'Cannot prepare SQL @ Opencloud__db_put_file | folder';
+            }
+        } else {
+            return 'Cannot prepare SQL @ Opencloud__db_put_file';
         }
 
         return $files;
@@ -162,6 +193,39 @@ if (!function_exists('Opencloud__db_put_extension')) {
     }
 }
 
+if (!function_exists('Opencloud__db_put_folder')) {
+    function Opencloud__db_put_folder($mysqli, $add_folder__name,    $add_folder__user_id)
+    {
+        $answer = false;
+        $add_folder__name = filter_var(trim($add_folder__name), FILTER_SANITIZE_STRING);
+        $add_folder__user_id = filter_var(trim($add_folder__user_id), FILTER_SANITIZE_NUMBER_INT);
+
+        $parent_folder_id = 0;
+
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare(
+            "INSERT INTO `folders` (`id`, `parent_folder_id`, `user__id`, `name`) VALUES (NULL, ?, ?, ?);"
+        )) {
+            /* bind parameters for markers */
+            $stmt->bind_param("iis", $parent_folder_id, $add_folder__user_id, $add_folder__name);
+            /* execute query */
+            $stmt->execute();
+            /* close statement */
+            $stmt->close();
+
+            $answer[] = array(
+                'text' => 'Folder was successfully added',
+                'code' => 200,
+                'status' => true
+            );
+        } else {
+            $answer = 'Cannot prepare SQL @ Opencloud__db_put_file';
+        }
+
+        return $answer;
+    }
+}
+
 if (!function_exists('Opencloud__db_get_extension_type')) {
     function Opencloud__db_get_extension_type($mysqli, $extension__id)
     {
@@ -206,7 +270,6 @@ if (!function_exists('Opencloud__db_get_filePathById')) {
 
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare("SELECT `hash__name` FROM `files` WHERE `id`=? LIMIT 1;")) {
-
             /* bind parameters for markers */
             $stmt->bind_param("i", $remove_file__id);
 
@@ -253,5 +316,101 @@ if (!function_exists('Opencloud__db_delete_file')) {
         }
 
         return $flag;
+    }
+}
+
+if (!function_exists('Opencloud__db_login')) {
+    function Opencloud__db_login($mysqli, $username, $password)
+    {
+        // filter input
+        $usernamePOST = filter_var(trim($username), FILTER_SANITIZE_STRING);
+        $passwordPOST = filter_var(trim($password), FILTER_SANITIZE_STRING);
+        // set defaults
+        $answer = array(
+            'status' => false,
+            'text' => 'Default text'
+        );
+        /* create a prepared statement */
+        $sql = 'SELECT `id`, `password` FROM `users` WHERE `username` = ? LIMIT 1;';
+        if ($stmt = $mysqli->prepare($sql)) {
+            // Bind parameters (s = string, i = int, b = blob, etc), in our case the username is a string so we use "s"
+            // if check_login           
+            $stmt->bind_param('s', $usernamePOST);
+
+            $stmt->execute();
+            // Store the result so we can check if the account exists in the database.
+            $stmt->store_result();
+
+            if ($stmt->num_rows > 0) {
+                $stmt->bind_result($id, $password);
+                $stmt->fetch();
+                // Account exists, now we verify the password.
+                // Note: remember to use password_hash in your registration file to store the hashed passwords.
+                if (password_verify($passwordPOST, $password)) {
+                    // Verification success! User has loggedin!
+                    // $_COOKIE['loggedin'] = TRUE;
+                    // $_COOKIE['password'] = $passwordPOST;
+                    // $_COOKIE['username'] = $usernamePOST;
+                    // $_COOKIE['id'] = $id;
+                    // cookie will expire in 1 hour
+                    setcookie("loggedin", TRUE, time() + 3600);
+                    setcookie("password", $passwordPOST, time() + 3600);
+                    setcookie("username", $usernamePOST, time() + 3600);
+                    setcookie("id", $id, time() + 3600);
+
+                    $answer['status'] = true;
+                    $answer['text'] = 'Verification success!';
+                } else {
+                    $answer['status'] = false;
+                    $answer['text'] = 'Incorrect password!';
+                }
+            } else {
+                // Incorrect username!
+                $answer['status'] = false;
+                $answer['text'] = 'Incorrect username!';
+            }
+            /* close statement */
+            $stmt->close();
+        } else {
+            $answer['status'] = false;
+            $answer['text'] = 'Cannot prepare SQL @ Opencloud__db_login';
+        }
+        return $answer;
+    }
+}
+
+if (!function_exists('Opencloud__db_check_login')) {
+    function Opencloud__db_check_login($mysqli)
+    {
+        if (
+            $_COOKIE
+            && isset($_COOKIE['loggedin'])
+            && !empty($_COOKIE['loggedin'])
+            && true === $_COOKIE['loggedin']
+            && isset($_COOKIE['password'])
+            && !empty($_COOKIE['password'])
+            && isset($_COOKIE['username'])
+            && !empty($_COOKIE['username'])
+            && isset($_COOKIE['id'])
+            && !empty($_COOKIE['id'])
+        ) {
+            // filter input
+            $passwordCOOKIE = filter_input(INPUT_COOKIE, 'password', FILTER_SANITIZE_STRING);
+            $usernameCOOKIE = filter_input(INPUT_COOKIE, 'username', FILTER_SANITIZE_STRING);
+            // $idCOOKIE = filter_input(INPUT_COOKIE, 'id', FILTER_SANITIZE_NUMBER_INT);
+
+            $logged_in__answer = Opencloud__db_login($mysqli, $usernameCOOKIE, $passwordCOOKIE);
+            if (
+                isset($logged_in__answer['status'])
+                && true === $logged_in__answer['status']
+            ) {
+                // Verification success!
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }

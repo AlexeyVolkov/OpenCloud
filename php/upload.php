@@ -4,8 +4,6 @@ require 'variables.php';
 require 'core/db.php';
 
 /**
- * MAIN CODE BEGINs here
- * 
  * @link https://www.w3schools.com/php/php_file_upload.asp
  */
 if ($_FILES && isset($_FILES[POST_FILE_FIELD]) && !empty($_FILES[POST_FILE_FIELD])) {
@@ -52,6 +50,24 @@ if ($_FILES && isset($_FILES[POST_FILE_FIELD]) && !empty($_FILES[POST_FILE_FIELD
         }
     }
 }
-/**
- * MAIN CODE ENDs here
- */
+
+if (
+    $_POST
+    && isset($_POST['add_folder'])
+    && !empty($_POST['add_folder'])
+    && isset($_POST['add_folder__name'])
+    && isset($_POST['add_folder__user_id'])
+) {
+    $add_folder__name = filter_input(INPUT_POST, 'add_folder__name', FILTER_SANITIZE_STRING);
+    $add_folder__user_id = filter_input(INPUT_POST, 'add_folder__user_id', FILTER_SANITIZE_NUMBER_INT);
+    // open connection
+    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    // add folder
+    $answer = Opencloud__db_put_folder($mysql, $add_folder__name,    $add_folder__user_id);
+
+    // output result
+    header('Content-Type: application/json');
+    echo json_encode($answer);
+    // close connection
+    Opencloud__db_close($mysql);
+}
