@@ -20,11 +20,11 @@ if (
     && !empty($_COOKIE[COOKIE__USER_ID])
 ) {
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
     /**
      * Security check
      */
-    if (!Opencloud__db_check_login($mysql)) {
+    if (!Opencloud__Db_check_login($mysql)) {
         http_response_code(401);
         print 'You cannot upload files.';
         return false;
@@ -49,14 +49,14 @@ if (
 
         // 1. Put Info to DB
 
-        $extension__id = Opencloud__db_get_extension_id($mysql, $file['type']);
+        $extension__id = Opencloud__Db_get_extension_id($mysql, $file['type']);
         $status__id = 1; // 1 - existing; 0 - deleted
         $size = filesize($file['tmp_name']);
         $parent_folder__id = 1; // 1 - root (default)
 
         // put file upload info to DB
         $file_uploaded = false;
-        if (Opencloud__db_put_file($mysql, $hash__name, $hash__file, $user__id, $file['name'], $extension__id, $status__id, $size, $parent_folder__id)) {
+        if (Opencloud__Db_put_file($mysql, $hash__name, $hash__file, $user__id, $file['name'], $extension__id, $status__id, $size, $parent_folder__id)) {
             $file_uploaded = true;
         }
         // 2. Upload File
@@ -69,7 +69,7 @@ if (
             }
         }
     }
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }
 
 if (
@@ -87,11 +87,11 @@ if (
     && !empty($_COOKIE[COOKIE__USER_ID])
 ) {
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
     /**
      * Security check
      */
-    if (!Opencloud__db_check_login($mysql)) {
+    if (!Opencloud__Db_check_login($mysql)) {
         http_response_code(401);
         print 'You cannot add folder.';
         return false;
@@ -100,11 +100,11 @@ if (
     $add_folder__name = filter_input(INPUT_POST, 'add_folder__name', FILTER_SANITIZE_STRING);
     $add_folder__user_id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
     // add folder
-    $answer = Opencloud__db_put_folder($mysql, $add_folder__name,    $add_folder__user_id);
+    $answer = Opencloud__Db_put_folder($mysql, $add_folder__name,    $add_folder__user_id);
 
     // output result
     header('Content-Type: application/json');
     echo json_encode($answer);
     // close connection
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }

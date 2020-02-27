@@ -15,11 +15,11 @@ if (
     && !empty($_COOKIE[COOKIE__USER_ID])
 ) {
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
     /**
      * Security check
      */
-    if (!Opencloud__db_check_login($mysql)) {
+    if (!Opencloud__Db_check_login($mysql)) {
         http_response_code(401);
         print 'You cannot see files.';
         return false;
@@ -27,11 +27,11 @@ if (
 
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
 
-    $files = Opencloud__db_get_files($mysql, $user__id);
+    $files = Opencloud__Db_get_files($mysql, $user__id);
 
     header('Content-Type: application/json');
     echo json_encode($files);
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }
 
 if (
@@ -47,11 +47,11 @@ if (
     && !empty($_COOKIE[COOKIE__USER_ID])
 ) {
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
     /**
      * Security check
      */
-    if (!Opencloud__db_check_login($mysql)) {
+    if (!Opencloud__Db_check_login($mysql)) {
         http_response_code(401);
         print 'You cannot download file.';
         return false;
@@ -68,15 +68,15 @@ if (
         exit();
     }
 
-    $files = Opencloud__db_get_files($mysql, $user__id, $download_file__id);
+    $files = Opencloud__Db_get_files($mysql, $user__id, $download_file__id);
 
     foreach ($files as $file) {
         $hash__path = TARGET_DIR . $file['hash__name'];
-        $type = Opencloud__db_get_extension_type($mysql, $file['extension__id']);
+        $type = Opencloud__Db_get_extension_type($mysql, $file['extension__id']);
         header('Content-Type: ' . $type);
         header("Content-disposition: attachment; filename=\"" . basename($file['real_name']) . "\"");
         readfile($hash__path);
     }
 
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }

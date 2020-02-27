@@ -1,7 +1,41 @@
 <?php
 
-if (!function_exists('Opencloud__db_connect')) {
-    function Opencloud__db_connect($host, $username, $password, $database)
+/**
+ * OpenCloud Database funtions
+ *
+ * @package Opencloud
+ * @since 1.0.0
+ */
+
+/**
+ * Table of Contents:
+ * 
+ * Opencloud__Db_connect
+ * Opencloud__Db_close
+ * Opencloud__Db_get_files
+ * Opencloud__Db_put_file
+ * Opencloud__Db_get_extension_id
+ * Opencloud__Db_put_extension
+ * Opencloud__Db_put_folder
+ * Opencloud__Db_get_extension_type
+ * Opencloud__Db_get_filePathById
+ * Opencloud__Db_delete_file
+ * Opencloud__Db_login
+ * Opencloud__Db_check_login
+ */
+
+if (!function_exists('Opencloud__Db_connect')) {
+    /**
+     * Connects to DataBase
+     * 
+     * @param string $host Host name.
+     * @param string $username The MySQL user name.
+     * @param string $password The MySQL password.
+     * @param string $database The MySQL database.
+     * 
+     * @return mysqli|false Object which represents the connection to a MySQL Server or false if an error occurred.
+     */
+    function Opencloud__Db_connect($host, $username, $password, $database)
     {
         // filter input
         $host = filter_var(trim($host), FILTER_SANITIZE_STRING);
@@ -12,7 +46,7 @@ if (!function_exists('Opencloud__db_connect')) {
         $mysqli = mysqli_connect($host, $username, $password, $database);
         if (mysqli_connect_errno()) {
             print 'Debug Info<hr><pre>';
-            print 'Failed to connect to MySQL @ Opencloud__db_connect' . '<br>';
+            print 'Failed to connect to MySQL @ Opencloud__Db_connect' . '<br>';
             print 'mysqli_connect_error:' . htmlspecialchars(mysqli_connect_error()) . '<br>';
             print '<hr></pre>';
         }
@@ -20,16 +54,35 @@ if (!function_exists('Opencloud__db_connect')) {
     }
 }
 
-if (!function_exists('Opencloud__db_close')) {
-    function Opencloud__db_close($mysqli)
+if (!function_exists('Opencloud__Db_close')) {
+    /**
+     * Close connection with DataBase
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * 
+     * @see Opencloud__Db_connect
+     * 
+     * @return void
+     */
+    function Opencloud__Db_close($mysqli)
     {
         /* close connection */
         $mysqli->close();
     }
 }
 
-if (!function_exists('Opencloud__db_get_files')) {
-    function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
+if (!function_exists('Opencloud__Db_get_files')) {
+    /**
+     * Returns list of files
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * @param int $user_id User ID.
+     * @param int $getID File ID.
+     * @param int $parent_folder_id Parent folder ID.
+     * 
+     * @return array|false List of files
+     */
+    function Opencloud__Db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
     {
         // filter input
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
@@ -85,7 +138,7 @@ if (!function_exists('Opencloud__db_get_files')) {
             $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__db_get_files' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_get_files' . '<br>';
             print 'user_id:' . htmlspecialchars($user_id) . '<br>';
             print 'getID:' . htmlspecialchars($getID) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
@@ -127,7 +180,7 @@ if (!function_exists('Opencloud__db_get_files')) {
             $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__db_get_files | folder' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_get_files | folder' . '<br>';
             print 'user_id:' . htmlspecialchars($user_id) . '<br>';
             print 'getID:' . htmlspecialchars($getID) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
@@ -142,8 +195,23 @@ if (!function_exists('Opencloud__db_get_files')) {
 }
 
 
-if (!function_exists('Opencloud__db_put_file')) {
-    function Opencloud__db_put_file($mysqli, $hash__name, $hash__file, $user_id, $real_name, $extension__id, $status__id, $size, $parent_folder__id)
+if (!function_exists('Opencloud__Db_put_file')) {
+    /**
+     * Uploads list of files
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * @param string $hash__name File name hash.
+     * @param string $hash__file File hash.
+     * @param int $user_id User ID.
+     * @param string $real_name File name.
+     * @param int $extension__id Extension ID.
+     * @param int $status__id File status: existing|removed.
+     * @param int $size File size.
+     * @param int $parent_folder_id Parent folder ID.
+     * 
+     * @return bool File is uploaded
+     */
+    function Opencloud__Db_put_file($mysqli, $hash__name, $hash__file, $user_id, $real_name, $extension__id, $status__id, $size, $parent_folder__id)
     {
         // filter input
         $hash__name = filter_var(trim($hash__name), FILTER_SANITIZE_STRING);
@@ -155,7 +223,7 @@ if (!function_exists('Opencloud__db_put_file')) {
         $size = filter_var(trim($size), FILTER_SANITIZE_NUMBER_INT);
         $parent_folder__id = filter_var(trim($parent_folder__id), FILTER_SANITIZE_NUMBER_INT);
         // set defaults
-        $flag = false;
+        $file_uploaded = false;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare(
             "INSERT INTO `files` (`id`, `upload_date`, `hash__name`, `hash__file`, `user_id`, `real_name`, `extension__id`, `status__id`, `size`, `parent_folder__id`) VALUES (NULL, NOW(), ?, ?, ?, ?, ?, ?, ?, ?);"
@@ -167,10 +235,10 @@ if (!function_exists('Opencloud__db_put_file')) {
             /* close statement */
             $stmt->close();
 
-            $flag = true;
+            $file_uploaded = true;
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__db_put_file' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_put_file' . '<br>';
             print 'hash__name:' . htmlspecialchars($hash__name) . '<br>';
             print 'hash__file:' . htmlspecialchars($hash__file) . '<br>';
             print 'user_id:' . htmlspecialchars($user_id) . '<br>';
@@ -183,12 +251,20 @@ if (!function_exists('Opencloud__db_put_file')) {
             print '<hr></pre>';
         }
 
-        return $flag;
+        return $file_uploaded;
     }
 }
 
-if (!function_exists('Opencloud__db_get_extension_id')) {
-    function Opencloud__db_get_extension_id($mysqli, $extension__string)
+if (!function_exists('Opencloud__Db_get_extension_id')) {
+    /**
+     * Returns extension ID form DB
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * @param string $extension__string Extenstion. Example: image/jpeg.
+     * 
+     * @return int|bool Extension ID form DB
+     */
+    function Opencloud__Db_get_extension_id($mysqli, $extension__string)
     {
         // filter input
         $extension__string = filter_var(trim($extension__string), FILTER_SANITIZE_STRING);
@@ -214,13 +290,13 @@ if (!function_exists('Opencloud__db_get_extension_id')) {
                 return $extension__id;
             } else {
                 // Add new Type to DB
-                Opencloud__db_put_extension($mysqli, $extension__string);
+                Opencloud__Db_put_extension($mysqli, $extension__string);
                 // Get an ID again
-                return Opencloud__db_get_extension_id($mysqli, $extension__string);
+                return Opencloud__Db_get_extension_id($mysqli, $extension__string);
             }
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__db_get_extension_id' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_get_extension_id' . '<br>';
             print 'extension__string:' . htmlspecialchars($extension__string) . '<br>';
             // print 'mysqli->error:' . $mysqli->error . '<br>';
             print '<hr></pre>';
@@ -230,8 +306,8 @@ if (!function_exists('Opencloud__db_get_extension_id')) {
     }
 }
 
-if (!function_exists('Opencloud__db_put_extension')) {
-    function Opencloud__db_put_extension($mysqli, $extension__string)
+if (!function_exists('Opencloud__Db_put_extension')) {
+    function Opencloud__Db_put_extension($mysqli, $extension__string)
     {
         $flag = false;
         $extension__string = filter_var(trim($extension__string), FILTER_SANITIZE_STRING);
@@ -250,7 +326,7 @@ if (!function_exists('Opencloud__db_put_extension')) {
             $flag = true;
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__db_put_extension' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_put_extension' . '<br>';
             print 'extension__string:' . htmlspecialchars($extension__string) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
             print '<hr></pre>';
@@ -260,8 +336,11 @@ if (!function_exists('Opencloud__db_put_extension')) {
     }
 }
 
-if (!function_exists('Opencloud__db_put_folder')) {
-    function Opencloud__db_put_folder($mysqli, $add_folder__name,    $add_folder__user_id)
+if (!function_exists('Opencloud__Db_put_folder')) {
+    /**
+     * TODO: check file`s hashes, not names
+     */
+    function Opencloud__Db_put_folder($mysqli, $add_folder__name,    $add_folder__user_id)
     {
         $answer = false;
         $add_folder__name = filter_var(trim($add_folder__name), FILTER_SANITIZE_STRING);
@@ -287,7 +366,7 @@ if (!function_exists('Opencloud__db_put_folder')) {
             );
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare statement @ Opencloud__db_put_folder' . '<br>';
+            print 'Cannot prepare statement @ Opencloud__Db_put_folder' . '<br>';
             print 'parent_folder_id:' . htmlspecialchars($parent_folder_id) . '<br>';
             print 'add_folder__user_id:' . htmlspecialchars($add_folder__user_id) . '<br>';
             print 'add_folder__name:' . htmlspecialchars($add_folder__name) . '<br>';
@@ -299,8 +378,8 @@ if (!function_exists('Opencloud__db_put_folder')) {
     }
 }
 
-if (!function_exists('Opencloud__db_get_extension_type')) {
-    function Opencloud__db_get_extension_type($mysqli, $extension__id)
+if (!function_exists('Opencloud__Db_get_extension_type')) {
+    function Opencloud__Db_get_extension_type($mysqli, $extension__id)
     {
         // filter input
         $extension__id = filter_var(trim($extension__id), FILTER_SANITIZE_NUMBER_INT);
@@ -328,7 +407,7 @@ if (!function_exists('Opencloud__db_get_extension_type')) {
             $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare statement @ Opencloud__db_get_extension_type' . '<br>';
+            print 'Cannot prepare statement @ Opencloud__Db_get_extension_type' . '<br>';
             print 'extension__id:' . htmlspecialchars($extension__id) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
             print '<hr></pre>';
@@ -338,8 +417,8 @@ if (!function_exists('Opencloud__db_get_extension_type')) {
     }
 }
 
-if (!function_exists('Opencloud__db_get_filePathById')) {
-    function Opencloud__db_get_filePathById($mysqli, $remove_file__id)
+if (!function_exists('Opencloud__Db_get_filePathById')) {
+    function Opencloud__Db_get_filePathById($mysqli, $remove_file__id)
     {
         // filter input
         $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
@@ -367,7 +446,7 @@ if (!function_exists('Opencloud__db_get_filePathById')) {
             $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare statement @ Opencloud__db_get_filePathById' . '<br>';
+            print 'Cannot prepare statement @ Opencloud__Db_get_filePathById' . '<br>';
             print 'remove_file__id:' . htmlspecialchars($remove_file__id) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
             print '<hr></pre>';
@@ -377,8 +456,8 @@ if (!function_exists('Opencloud__db_get_filePathById')) {
     }
 }
 
-if (!function_exists('Opencloud__db_delete_file')) {
-    function Opencloud__db_delete_file($mysqli, $remove_file__id)
+if (!function_exists('Opencloud__Db_delete_file')) {
+    function Opencloud__Db_delete_file($mysqli, $remove_file__id)
     {
         // filter input
         $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
@@ -398,7 +477,7 @@ if (!function_exists('Opencloud__db_delete_file')) {
             $flag = true;
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare statement @ Opencloud__db_delete_file' . '<br>';
+            print 'Cannot prepare statement @ Opencloud__Db_delete_file' . '<br>';
             print 'remove_file__id:' . htmlspecialchars($remove_file__id) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
             print '<hr></pre>';
@@ -408,8 +487,8 @@ if (!function_exists('Opencloud__db_delete_file')) {
     }
 }
 
-if (!function_exists('Opencloud__db_login')) {
-    function Opencloud__db_login($mysqli, $username, $password)
+if (!function_exists('Opencloud__Db_login')) {
+    function Opencloud__Db_login($mysqli, $username, $password)
     {
         // filter input
         $usernamePOST = filter_var(trim($username), FILTER_SANITIZE_STRING);
@@ -458,14 +537,14 @@ if (!function_exists('Opencloud__db_login')) {
             $stmt->close();
         } else {
             $answer['status'] = false;
-            $answer['text'] = 'Cannot prepare SQL @ Opencloud__db_login';
+            $answer['text'] = 'Cannot prepare SQL @ Opencloud__Db_login';
         }
         return $answer;
     }
 }
 
-if (!function_exists('Opencloud__db_check_login')) {
-    function Opencloud__db_check_login($mysqli)
+if (!function_exists('Opencloud__Db_check_login')) {
+    function Opencloud__Db_check_login($mysqli)
     {
         if (
             $_COOKIE
@@ -484,7 +563,7 @@ if (!function_exists('Opencloud__db_check_login')) {
             $usernameCOOKIE = filter_input(INPUT_COOKIE, COOKIE__USER_NAME, FILTER_SANITIZE_STRING);
             // $idCOOKIE = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
 
-            $logged_in__answer = Opencloud__db_login($mysqli, $usernameCOOKIE, $passwordCOOKIE);
+            $logged_in__answer = Opencloud__Db_login($mysqli, $usernameCOOKIE, $passwordCOOKIE);
             if (
                 isset($logged_in__answer['status'])
                 && true === $logged_in__answer['status']

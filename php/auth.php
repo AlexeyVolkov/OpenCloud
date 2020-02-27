@@ -19,16 +19,16 @@ if (
     $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
 
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
     // set defaults
 
-    $answer = Opencloud__db_login($mysql, $username, $password);
+    $answer = Opencloud__Db_login($mysql, $username, $password);
 
     // output result
     header('Content-Type: application/json');
     echo json_encode($answer);
     // close connection
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }
 
 if (
@@ -37,14 +37,14 @@ if (
     && !empty($_POST['check_login'])
 ) {
     // open connection
-    $mysql = Opencloud__db_connect(HOST, USER, PASSWORD, DATABASE);
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
 
     // set defaults
     $answer = array(
         'status' => false,
         'text' => 'Default text'
     );
-    if (Opencloud__db_check_login($mysql)) {
+    if (Opencloud__Db_check_login($mysql)) {
         $answer['status'] = true;
         $answer['text'] = 'Verification success!';
         http_response_code(200);
@@ -57,7 +57,7 @@ if (
     echo json_encode($answer);
 
     // close connection
-    Opencloud__db_close($mysql);
+    Opencloud__Db_close($mysql);
 }
 
 if (
