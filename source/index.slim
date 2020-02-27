@@ -35,20 +35,22 @@ html lang="en"
 							small.form__text_small.text_italic
 								| Both fields are required
 
-            form.upload#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
+            form.upload.logged_in_user_block#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
                 fieldset.form__fieldset
                     legend.form__legend Upload Your File
                     dl.form-group
                         dt.form__dt
                             label for="file" Choose the file to upload:
                         dd.form__dd
-                            input#file type="file" name='files[]' multiple='true' disabled="true"
+                            input#file type="file" name='files[]' multiple='true'
                     dl.form-group
                         dt.form__dt
                         dd.form__dd
-                            input type="submit" name='submit' disabled="true"           
-            button.button.button_add-folder type="button" disabled="true"  Add New Folder
-            table.files
+                            input type="hidden" name="username" value=""
+                            input type="hidden" name="id" value=""
+                            input type="submit" name='submit'          
+            button.button.button_add-folder.logged_in_user_block type="button" Add New Folder
+            table.files.logged_in_user_block
                 caption Your Files
                 thead
                     th Name
@@ -57,3 +59,6 @@ html lang="en"
                     th Name
                     th Remove
                 tbody
+        footer
+            p
+                a href="php/auth.php?logout=true" title="System won't identify you" Log Out

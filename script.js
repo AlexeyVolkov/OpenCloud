@@ -216,6 +216,25 @@ function post_ajax(url, data) {
   request.send(data);
 }
 /**
+ * Set cookie, get cookie functions
+ * @link https://plainjs.com/javascript/utilities/set-cookie-get-cookie-and-delete-cookie-5/
+ */
+
+
+function getCookie(name) {
+  var v = document.cookie.match('(^|;) ?' + encodeURIComponent(name) + '=([^;]*)(;|$)');
+  return v ? decodeURIComponent(v[2]) : null;
+} // function setCookie(name, value, days) {
+//     var d = new Date();
+//     d.setTime(d.getTime() + 24 * 60 * 60 * 1000 * days);
+//     document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + "; path=/; expires=" + d.toGMTString() + ";SameSite=Strict" /*+ ";secure" + ";HttpOnly"*/;
+// }
+
+
+function deleteCookie(name) {
+  setCookie(encodeURIComponent(name), '', -1);
+}
+/**
  * Functions Run After Refresh
  */
 
@@ -242,7 +261,7 @@ function handleUploadForm(formQuery = '.upload') {
   // grab reference to form
   const formUploadElem = document.querySelector(formQuery); // if the form exists
 
-  if (null == formUploadElem || undefined == formUploadElem) {
+  if (!formUploadElem || null == formUploadElem || undefined == formUploadElem) {
     console.debug("Cannot find form: " + formQuery);
     return;
   } // form submit handler
@@ -303,8 +322,20 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
         return;
       }
 
+      if (files[0]['error_text'] && 0 < files[0]['error_text'].length) {
+        console.debug("Error: " + files[0]['error_text']);
+      }
+
+      if (files[0]['status'] && false == files[0]['status']) {
+        console.debug('Cannot show files');
+        return;
+      }
+
       files.forEach(element => {
+        if (element['status']) {} // continue;// output just files
         // Create an empty <tr> element and add it to the 1st position of the table:
+
+
         let row = tableFilesElem.insertRow(0); // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
 
         let cell2 = row.insertCell(0);
@@ -393,7 +424,6 @@ function handleAddFolder(addFolderQuery = '.button_add-folder') {
     let formData = new FormData();
     formData.append("add_folder", "true");
     formData.append("add_folder__name", add_folder__name);
-    formData.append("add_folder__user_id", 1);
     let url = 'php/upload.php'; // 2. send request
 
     var request = new XMLHttpRequest();
@@ -428,43 +458,13 @@ function handleAddFolder(addFolderQuery = '.button_add-folder') {
 
 
 function loggedin() {
-  //
-  // AJAX check login
-  //
-  // 1. form request
-  let formData = new FormData();
-  formData.append("check_login", "true");
-  let url = 'php/auth.php'; // 2. send request
+  let loggedinVar = getCookie('user__loggedin');
 
-  var request = new XMLHttpRequest();
-  request.open('POST', url, true);
+  if (loggedinVar && null != loggedinVar && undefined != loggedinVar && 1 == loggedinVar) {
+    return true;
+  }
 
-  request.onload = function () {
-    if (this.status >= 200 && this.status < 400) {
-      // 3. Success!
-      let answer = JSON.parse(this.response); // if the files exists
-
-      if (!answer || null == answer || undefined == answer || 0 == answer.length) {
-        console.debug("Cannot get answer from server with data:");
-        console.debug(formData);
-        return false;
-      }
-
-      console.debug('loggedin?');
-      console.debug(answer);
-
-      if (true == answer['status']) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      console.debug('We reached our target server, but it returned an error');
-      return false;
-    }
-  };
-
-  request.send(formData);
+  return false;
 }
 /**
  * Login Handler
@@ -491,10 +491,29 @@ function loginHandler(formLoginQuery = '#login') {
   });
 }
 
+function unblockLogin() {
+  let loggedInBlocksQuery = '.logged_in_user_block'; // grab reference to form
+
+  const loggedInElems = document.querySelectorAll(loggedInBlocksQuery); // if the form exists
+
+  if (!loggedInElems || null == loggedInElems || undefined == loggedInElems) {
+    console.debug("Cannot find logged in users` blocks: " + loggedInBlocksQuery);
+    return;
+  }
+
+  loggedInElems.forEach(loggedInElem => {
+    loggedInElem.style.display = 'block';
+  });
+}
+
 ready(function () {
   loginHandler();
-  handleUploadForm();
-  fillFileTable();
-  handleAddFolder();
+
+  if (loggedin()) {
+    unblockLogin();
+    fillFileTable();
+    handleUploadForm();
+    handleAddFolder();
+  }
 });
 //# sourceMappingURL=script.js.map

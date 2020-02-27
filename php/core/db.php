@@ -23,14 +23,18 @@ if (!function_exists('Opencloud__db_get_files')) {
     function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
     {
         $files = false;
+        $files[0] = array(
+            'status' => false,
+            'error_text' => ''
+        );
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
         $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
         $parent_folder_id = filter_var(trim($parent_folder_id), FILTER_SANITIZE_NUMBER_INT);
 
-        $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? LIMIT 1;";
+        $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? AND `files`.`user_id`=? LIMIT 1;";
 
         if (0 == $getID) {
-            $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`user_id`=?;";
+            $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`user_id` = ?;";
         }
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
@@ -39,58 +43,77 @@ if (!function_exists('Opencloud__db_get_files')) {
             if (0 == $getID) {
                 $stmt->bind_param("i", $user_id);
             } else {
-                $stmt->bind_param("i", $getID);
+                $stmt->bind_param("ii", $getID, $user_id);
             }
 
             /* execute query */
             $stmt->execute();
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_id, $real_name, $id, $hash__name, $extension__id);
+            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__id);
 
             /* fetch values */
             while ($stmt->fetch()) {
                 $files[] = array(
-                    'upload_date' => $upload_date,
-                    'user_id' => $user_id,
-                    'real_name' => $real_name,
-                    'id' => $id,
-                    'hash__name' => $hash__name,
-                    'extension__id' => $extension__id,
+                    'upload_date' => htmlentities($upload_date, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'user_id' => htmlentities($user_idDB, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'real_name' => htmlentities($real_name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'id' => htmlentities($id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'extension__id' => htmlentities($extension__id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'type' => 'file'
                 );
             }
+            if (0 == $stmt->num_rows) {
+                $files[0]['error_text'] = 'There are '
+                    . htmlentities($stmt->num_rows, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ' files [user_id:'
+                    . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ']';
+            } else {
+                $files[0]['status'] = true;
+            }
             /* close statement */
             $stmt->close();
-
-            $sql = "SELECT `id`, `name` FROM `folders` WHERE `folders`.`parent_folder_id` = ? AND `folders`.`user__id` = ?;";
-            /* create a prepared statement */
-            if ($stmt = $mysqli->prepare($sql)) {
-                /* bind parameters for markers */
-                $stmt->bind_param("ii", $parent_folder_id,  $user_id);
-                /* execute query */
-                $stmt->execute();
-                /* bind result variables */
-                $stmt->bind_result($folder__id, $folder__name);
-                /* fetch values */
-                while ($stmt->fetch()) {
-                    $files[] = array(
-                        'upload_date' => '0000-00-00 00:00:00',
-                        'user_id' => $user_id,
-                        'real_name' => $folder__name,
-                        'id' => $folder__id,
-                        'hash__name' => '',
-                        'extension__id' => 0,
-                        'type' => 'folder'
-                    );
-                }
-                /* close statement */
-                $stmt->close();
-            } else {
-                return 'Cannot prepare SQL @ Opencloud__db_put_file | folder';
-            }
         } else {
-            return 'Cannot prepare SQL @ Opencloud__db_put_file';
+            $files[0]['error_text'] = 'Cannot prepare SQL @ Opencloud__db_put_file';
+        }
+        $sql = "SELECT `id`, `name` FROM `folders` WHERE `folders`.`parent_folder_id` = ? AND `folders`.`user__id` = ?;";
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare($sql)) {
+            /* bind parameters for markers */
+            $stmt->bind_param("ii", $parent_folder_id,  $user_id);
+            /* execute query */
+            $stmt->execute();
+            /* bind result variables */
+            $stmt->bind_result($folder__id, $folder__name);
+            /* fetch values */
+            while ($stmt->fetch()) {
+                $files[] = array(
+                    'upload_date' => '0000-00-00 00:00:00',
+                    'user_id' => htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'real_name' => htmlentities($folder__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'id' => htmlentities($folder__id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'hash__name' => '',
+                    'extension__id' => 0,
+                    'type' => 'folder'
+                );
+            }
+            if (0 == $stmt->num_rows) {
+                $files[0]['error_text'] = 'There are '
+                    . htmlentities($stmt->num_rows, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ' folders [user_id:'
+                    . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ', parent_folder_id:'
+                    . htmlentities($parent_folder_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ']';
+            } else {
+                $files[0]['status'] = true;
+            }
+            /* close statement */
+            $stmt->close();
+        } else {
+            $files[0]['error_text'] = 'Cannot prepare SQL @ Opencloud__db_put_file | folder';
         }
 
         return $files;
@@ -348,15 +371,11 @@ if (!function_exists('Opencloud__db_login')) {
                 // Note: remember to use password_hash in your registration file to store the hashed passwords.
                 if (password_verify($passwordPOST, $password)) {
                     // Verification success! User has loggedin!
-                    // $_COOKIE['loggedin'] = TRUE;
-                    // $_COOKIE['password'] = $passwordPOST;
-                    // $_COOKIE['username'] = $usernamePOST;
-                    // $_COOKIE['id'] = $id;
                     // cookie will expire in 1 hour
-                    setcookie("loggedin", TRUE, time() + 3600);
-                    setcookie("password", $passwordPOST, time() + 3600);
-                    setcookie("username", $usernamePOST, time() + 3600);
-                    setcookie("id", $id, time() + 3600);
+                    setcookie(COOKIE__USER_LOGGED_IN, TRUE, time() + 3600, '/');
+                    setcookie(COOKIE__USER_PASSWORD, $passwordPOST, time() + 3600);
+                    setcookie(COOKIE__USER_NAME, $usernamePOST, time() + 3600);
+                    setcookie(COOKIE__USER_ID, $id, time() + 3600);
 
                     $answer['status'] = true;
                     $answer['text'] = 'Verification success!';
@@ -384,20 +403,20 @@ if (!function_exists('Opencloud__db_check_login')) {
     {
         if (
             $_COOKIE
-            && isset($_COOKIE['loggedin'])
-            && !empty($_COOKIE['loggedin'])
-            && true === $_COOKIE['loggedin']
-            && isset($_COOKIE['password'])
-            && !empty($_COOKIE['password'])
-            && isset($_COOKIE['username'])
-            && !empty($_COOKIE['username'])
-            && isset($_COOKIE['id'])
-            && !empty($_COOKIE['id'])
+            && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
+            && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])
+            && 1 == $_COOKIE[COOKIE__USER_LOGGED_IN]
+            && isset($_COOKIE[COOKIE__USER_PASSWORD])
+            && !empty($_COOKIE[COOKIE__USER_PASSWORD])
+            && isset($_COOKIE[COOKIE__USER_NAME])
+            && !empty($_COOKIE[COOKIE__USER_NAME])
+            && isset($_COOKIE[COOKIE__USER_ID])
+            && !empty($_COOKIE[COOKIE__USER_ID])
         ) {
             // filter input
-            $passwordCOOKIE = filter_input(INPUT_COOKIE, 'password', FILTER_SANITIZE_STRING);
-            $usernameCOOKIE = filter_input(INPUT_COOKIE, 'username', FILTER_SANITIZE_STRING);
-            // $idCOOKIE = filter_input(INPUT_COOKIE, 'id', FILTER_SANITIZE_NUMBER_INT);
+            $passwordCOOKIE = filter_input(INPUT_COOKIE, COOKIE__USER_PASSWORD, FILTER_SANITIZE_STRING);
+            $usernameCOOKIE = filter_input(INPUT_COOKIE, COOKIE__USER_NAME, FILTER_SANITIZE_STRING);
+            // $idCOOKIE = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
 
             $logged_in__answer = Opencloud__db_login($mysqli, $usernameCOOKIE, $passwordCOOKIE);
             if (

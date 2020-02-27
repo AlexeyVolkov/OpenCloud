@@ -56,3 +56,23 @@ if (
     // close connection
     Opencloud__db_close($mysql);
 }
+
+if (
+    $_GET
+    && isset($_GET['logout'])
+    && !empty($_GET['logout'])
+) {
+    unset($_COOKIE[COOKIE__USER_LOGGED_IN]);
+    setcookie(COOKIE__USER_LOGGED_IN, null, -1, '/');
+    unset($_COOKIE[COOKIE__USER_PASSWORD]);
+    setcookie(COOKIE__USER_PASSWORD, null, -1,);
+    unset($_COOKIE[COOKIE__USER_NAME]);
+    setcookie(COOKIE__USER_NAME, null, -1,);
+    unset($_COOKIE[COOKIE__USER_ID]);
+    setcookie(COOKIE__USER_ID, null, -1,);
+
+    // Redirect to the index page:
+    header("HTTP/1.1 200 OK");
+    header('Location: ' . WEBSITE_ADDRESS);
+    exit();
+}
