@@ -74,7 +74,7 @@ if (
         $hash__path = TARGET_DIR . $file['hash__name'];
         $type = Opencloud__Db_get_extension_type($mysql, $file['extension__id']);
         header('Content-Type: ' . $type);
-        header("Content-disposition: attachment; filename=\"" . basename($file['real_name']) . "\"");
+        header("Content-disposition: attachment; filename=\"" . basename(htmlspecialchars($file['real_name'])) . "\"");
         readfile($hash__path);
     }
 
