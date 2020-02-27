@@ -36,7 +36,8 @@ if (
 
     $file_path = Opencloud__db_get_filePathById($mysql, $remove_file__id);
     if ($file_path && Opencloud__db_delete_file($mysql, $remove_file__id)) { // file info is deleted
-        Opencloud__remove($file_path);
+        // Opencloud__remove($file_path);
+        // TODO: check if it's the last file in DB then delete
     }
 
     Opencloud__db_close($mysql);
