@@ -1,0 +1,54 @@
+/**
+A Complete Guide to the Table Element 
+@link https://css-tricks.com/complete-guide-table-element/#not-use
+
+Styling tables
+@link https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Styling_tables
+
+Fixed Table Layouts
+@link https://css-tricks.com/fixing-tables-long-strings/
+*/
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+  white-space: nowrap;
+  border-spacing: 0;
+}
+.table__thead,
+.table__tfoot {
+  background-color: @notice_back;
+}
+.table__tbody {
+  font-family: @mono;
+}
+.table__caption {
+  font-family: @mono;
+}
+
+.table__td,
+.table__th {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  padding: 0.2rem 0;
+  border-bottom: thin solid #d4d4d4;
+  border-top: thin solid #d4d4d4;
+}
+.table__tr {
+  &:hover,
+  &:focus,
+  &:focus-within {
+    background-color: #e9e9e9 !important;
+  }
+  &:nth-child(odd) {
+    background-color: #f9f9f9;
+  }
+}
+.table__col-80 {
+  width: 80%;
+}
+.table__col-20 {
+  width: 20%;
+}

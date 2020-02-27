@@ -23,10 +23,7 @@ if (!function_exists('Opencloud__db_get_files')) {
     function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
     {
         $files = false;
-        $files[0] = array(
-            'status' => false,
-            'error_text' => ''
-        );
+        $files_showing = false;
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
         $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
         $parent_folder_id = filter_var(trim($parent_folder_id), FILTER_SANITIZE_NUMBER_INT);
@@ -71,7 +68,7 @@ if (!function_exists('Opencloud__db_get_files')) {
                     . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
                     ']';
             } else {
-                $files[0]['status'] = true;
+                $files_showing = true;
             }
             /* close statement */
             $stmt->close();
@@ -108,15 +105,18 @@ if (!function_exists('Opencloud__db_get_files')) {
                     . htmlentities($parent_folder_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
                     ']';
             } else {
-                $files[0]['status'] = true;
+                $files_showing = true;
             }
             /* close statement */
             $stmt->close();
         } else {
             $files[0]['error_text'] = 'Cannot prepare SQL @ Opencloud__db_put_file | folder';
         }
-
-        return $files;
+        if ($files_showing) {
+            return $files;
+        } else {
+            return false;
+        }
     }
 }
 
@@ -186,6 +186,12 @@ if (!function_exists('Opencloud__db_get_extension_id')) {
                 // Get an ID again
                 return Opencloud__db_get_extension_id($mysqli, $extension__string);
             }
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__db_get_extension_id' . '<br>';
+            print 'extension__string:' . $extension__string . '<br>';
+            // print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return false;
@@ -210,6 +216,12 @@ if (!function_exists('Opencloud__db_put_extension')) {
             $stmt->close();
 
             $flag = true;
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__db_put_extension' . '<br>';
+            print 'extension__string:' . $extension__string . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return $flag;

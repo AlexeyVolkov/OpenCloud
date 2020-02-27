@@ -1,0 +1,191 @@
+.form {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: @notice_border;
+
+  *[disabled=""] {
+    cursor: not-allowed !important;
+  }
+
+  @media (min-width: @ipad) {
+    width: 86%;
+  }
+  @media (min-width: @desktop) {
+    width: 80%;
+  }
+}
+.form__fieldset {
+  position: relative;
+  border: none;
+}
+.form__legend {
+  // position: relative;
+  // left: -5%;
+  // margin: 0.3rem 0;
+  // padding: 0.1rem 0;
+  // border-bottom: thin solid @black;
+  // color: #595959;
+  // font-size: 0.75rem;
+  display: none;
+}
+
+.form__abbr[aria-label="required"] {
+  color: red;
+  cursor: help;
+  text-align: left;
+
+  &[data-descr] {
+    position: relative;
+
+    &:hover::after,
+    &:focus::after {
+      content: attr(data-descr);
+      position: absolute;
+      left: 0.1rem;
+      bottom: 0.1rem;
+      min-width: 10rem;
+      border: thin @black solid;
+      background-color: @white;
+      color: @black;
+      padding: 0.5rem;
+      z-index: 1;
+    }
+  }
+}
+
+.form__label {
+  padding: 0.4rem 0;
+  color: #555;
+}
+.form__text_small {
+  color: #6c757d;
+  font-size: 80%;
+  font-weight: 400;
+  text-align: justify;
+  clear: both;
+  hanging-punctuation: first force-end last;
+}
+.form__text_muted {
+  opacity: 0;
+  filter: alpha(opacity=0);
+  zoom: 1;
+}
+
+.form__input[type="text"],
+.form__input[type="password"],
+.form__input[type="date"],
+.form__input[type="submit"],
+.form__input[type="email"],
+.form__input[type="tel"],
+.form__input[type="file"],
+.form__button[type="submit"],
+.form__button[type="button"],
+.form__textarea,
+.form__select {
+  padding: 0.2em 0.4em;
+  width: 100%;
+  background-color: @white;
+  border: thin solid #a9a9a9;
+}
+
+.form__input[type="checkbox"],
+.form__input[type="radio"] {
+  cursor: pointer;
+  &[disabled] {
+    cursor: not-allowed !important;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 0.1rem @black;
+    outline: none;
+  }
+
+  &:focus ~ .form__text_muted,
+  &:hover ~ .form__text_muted,
+  .form__text_muted:focus-within {
+    opacity: 1;
+    filter: alpha(opacity=100);
+    zoom: 1;
+  }
+
+  & ~ .form__label {
+    padding: 0.8em 1em;
+    cursor: pointer;
+    &[disabled] {
+      cursor: not-allowed !important;
+    }
+  }
+}
+
+.form__input,
+.form__textarea,
+.form__button,
+.form__select {
+  &:hover,
+  &:focus {
+    background-color: #eee;
+  }
+  &:focus ~ .form__text_muted,
+  &:hover ~ .form__text_muted,
+  .form__text_muted:focus-within {
+    opacity: 1;
+    filter: alpha(opacity=100);
+    zoom: 1;
+  }
+
+  &:focus {
+    outline: medium solid @black;
+  }
+}
+
+.form__input[type="submit"],
+.form__button[type="submit"],
+.form__button[type="button"] {
+  cursor: pointer;
+  &[disabled] {
+    cursor: not-allowed !important;
+  }
+  padding: 1em 0;
+
+  &:focus {
+    border-style: inset;
+  }
+}
+
+.form-group {
+  margin: 0.4em auto;
+  display: flex;
+  flex-direction: column;
+
+  clear: both;
+
+  @media (min-width: @ipad) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.form__dt {
+  max-width: 100%;
+  @media (min-width: @ipad) {
+    width: 30%;
+    text-align: right;
+    padding-right: 0.5rem;
+  }
+}
+.form__dd {
+  max-width: 100%;
+
+  &:hover .form__text_muted,
+  &:focus .form__text_muted,
+  .form__text_muted:focus-within {
+    opacity: 1;
+    filter: alpha(opacity=100);
+    zoom: 1;
+  }
+  @media (min-width: @ipad) {
+    width: 70%;
+    padding-left: 0.5rem;
+  }
+}

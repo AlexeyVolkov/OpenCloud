@@ -5,6 +5,7 @@ function runRefresh() {
     document.body.style.cursor = 'progress';
     if (loggedin()) {
         fillFileTable();
+        unblockLogin();
     }
     document.body.style.cursor = 'default';
 }
@@ -52,6 +53,8 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
         console.debug("Cannot find table: " + filesListQuery);
         return;
     }
+    // clear the table
+    tableFilesElem.innerHTML = '';
     //
     // AJAX get list of Files
     //
@@ -80,17 +83,17 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
                 return;
             }
             files.forEach(element => {
-                if (element[0]) {
-                    continue;// output just files
-                }
                 // Create an empty <tr> element and add it to the 1st position of the table:
                 let row = tableFilesElem.insertRow(0);
+                row.className = 'table__tr';
 
                 // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
                 let cell2 = row.insertCell(0);
                 let cell4 = row.insertCell(1);
                 // let cell3 = row.insertCell(2);
                 // let cell4 = row.insertCell(3);
+                cell2.className = 'table__td';
+                cell4.className = 'table__td';
 
                 // Add some text to the new cells:
                 // cell1.innerHTML = element['upload_date'];
@@ -102,7 +105,7 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
                         element['id'] + '" class="link link_download">' + element['real_name'] + '</a>';
                 }
                 // cell3.innerHTML = '<a href="#" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
-                cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove">Remove</a>';
+                cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" title="Remove ' + element['real_name'] + '">Remove</a>';
 
                 // run content-rely code
                 runAfterJSReady();
@@ -235,15 +238,26 @@ function loginHandler(formLoginQuery = '#login') {
 }
 
 function unblockLogin() {
-    let loggedInBlocksQuery = '.logged_in_user_block';
+    /**
+     * MAKE IT VISIBLE
+     */
+    let privateBlocksQuery = '.block_hidden';
+    let publicInBlocksQuery = '.block_visible';
     // grab reference to form
-    const loggedInElems = document.querySelectorAll(loggedInBlocksQuery);
+    let privateElems = document.querySelectorAll(privateBlocksQuery);
+    let publicElems = document.querySelectorAll(publicInBlocksQuery);
     // if the form exists
-    if (!loggedInElems || null == loggedInElems || undefined == loggedInElems) {
-        console.debug("Cannot find logged in users` blocks: " + loggedInBlocksQuery);
-        return;
+    if (privateElems || null != privateElems || undefined != privateElems) {
+        privateElems.forEach(privateElem => {
+            privateElem.classList.remove('block_hidden');
+            privateElem.classList.add('block_visible');
+        });
     }
-    loggedInElems.forEach(loggedInElem => {
-        loggedInElem.style.display = 'block';
-    });
+    if (publicElems || null != publicElems || undefined != publicElems) {
+        publicElems.forEach(publicElem => {
+            publicElem.classList.remove('block_visible');
+            publicElem.classList.add('block_hidden');
+        });
+    }
+
 }

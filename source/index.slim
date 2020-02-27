@@ -5,18 +5,18 @@ html lang="en"
         meta content="IE=edge" http-equiv="X-UA-Compatible" /
         meta content="width=device-width, initial-scale=1.0" name="viewport" /
         title OpenCloud
-        link href="css/style.css" rel="stylesheet" /
+        link href="style.css" rel="stylesheet" /
         meta content=("Upload & Download files") name="description" /
         script src="script.js"
     body
-        main
-            form#login action="/php/auth.php" method="post"
+        main.row
+            form.form.row__block.block_visible#login action="/php/auth.php" method="post"
                 fieldset.form__fieldset
 					legend.form__legend Login
 					dl.form-group
 						dt.form__dt
-						label.form__label for="username"
-							| Account:
+						    label.form__label for="username"
+							    | Account:
 						dd.form__dd
 							input.form__input autocomplete="username" id="username" maxlength="25"							         minlength="1" name="username" placeholder="alex23" required="true"							         title="Please, input your Account" type="text"
 							small.form__text_muted.form__text_small
@@ -35,30 +35,33 @@ html lang="en"
 							small.form__text_small.text_italic
 								| Both fields are required
 
-            form.upload.logged_in_user_block#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
+            form.form.row__block.upload.block_hidden#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
                 fieldset.form__fieldset
                     legend.form__legend Upload Your File
                     dl.form-group
                         dt.form__dt
-                            label for="file" Choose the file to upload:
+                            label.form__label for="file" Choose the file to upload:
                         dd.form__dd
-                            input#file type="file" name='files[]' multiple='true'
+                            input.form__input#file type="file" name='files[]' multiple='true'
                     dl.form-group
                         dt.form__dt
                         dd.form__dd
-                            input type="hidden" name="username" value=""
-                            input type="hidden" name="id" value=""
-                            input type="submit" name='submit'          
-            button.button.button_add-folder.logged_in_user_block type="button" Add New Folder
-            table.files.logged_in_user_block
-                caption Your Files
-                thead
-                    th Name
-                    th Remove
-                tfoot
-                    th Name
-                    th Remove
-                tbody
-        footer
-            p
-                a href="php/auth.php?logout=true" title="System won't identify you" Log Out
+                            input.form__button type="submit" name='submit'          
+            button.row__block.form__button.button.button_add-folder.block_hidden type="button" disabled="true" Add New Folder
+            table.row__block.table.files.block_hidden
+                caption.table__caption.screen-reader-text Your Files
+                colgroup.table__colgroup
+				    col.table__col.table__col-80
+				    col.table__col.table__col-20
+                thead.table__thead
+                    tr.table__tr
+                        th.table__th Name
+                        th.table__th Remove
+                tfoot.table__tfoot
+                    tr.table__tr
+                        th.table__th Name
+                        th.table__th Remove
+                tbody.table__tbody
+        footer.row.footer
+            p.row__block
+                a.link href="php/auth.php?logout=true" title="System won't identify you" Log Out

@@ -25,6 +25,7 @@ if (
      * Security check
      */
     if (!Opencloud__db_check_login($mysql)) {
+        http_response_code(401);
         print 'You cannot upload files.';
         return false;
     }
@@ -61,13 +62,14 @@ if (
         // 2. Upload File
         if ($file_uploaded && !Opencloud__exist($hash__path, TARGET_DIR)) {
             if (Opencloud__upload($file, $hash__path)) {
-                print 'File is Uploaded!';
+                http_response_code(200);
+                print ' File is Uploaded! ';
             } else {
                 print 'Cannot upload file or this file already exists';
             }
         }
-        Opencloud__db_close($mysql);
     }
+    Opencloud__db_close($mysql);
 }
 
 if (
@@ -90,6 +92,7 @@ if (
      * Security check
      */
     if (!Opencloud__db_check_login($mysql)) {
+        http_response_code(401);
         print 'You cannot add folder.';
         return false;
     }

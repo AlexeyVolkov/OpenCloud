@@ -47,6 +47,9 @@ if (
     if (Opencloud__db_check_login($mysql)) {
         $answer['status'] = true;
         $answer['text'] = 'Verification success!';
+        http_response_code(200);
+    } else {
+        http_response_code(401);
     }
 
     // output result

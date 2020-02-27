@@ -20,6 +20,7 @@ if (
      * Security check
      */
     if (!Opencloud__db_check_login($mysql)) {
+        http_response_code(401);
         print 'You cannot see files.';
         return false;
     }
@@ -51,6 +52,7 @@ if (
      * Security check
      */
     if (!Opencloud__db_check_login($mysql)) {
+        http_response_code(401);
         print 'You cannot download file.';
         return false;
     }
@@ -58,6 +60,13 @@ if (
     // filter input
     $download_file__id = filter_input(INPUT_GET, 'download_file__id', FILTER_SANITIZE_NUMBER_INT);
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+
+    if (0 >= $download_file__id) {
+        // Redirect to the index page:
+        http_response_code(400);
+        header('Location: ' . WEBSITE_ADDRESS);
+        exit();
+    }
 
     $files = Opencloud__db_get_files($mysql, $user__id, $download_file__id);
 
