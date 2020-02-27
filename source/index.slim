@@ -10,7 +10,7 @@ html lang="en"
         script src="script.js"
     body
         main.row
-            form.form.row__block.block_visible#login action="/php/auth.php" method="post"
+            form.form.row__block.block_public#login action="/php/auth.php" method="post"
                 fieldset.form__fieldset
 					legend.form__legend Login
 					dl.form-group
@@ -35,7 +35,7 @@ html lang="en"
 							small.form__text_small.text_italic
 								| Both fields are required
 
-            form.form.row__block.upload.block_hidden#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
+            form.form.row__block.upload.block_private#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
                 fieldset.form__fieldset
                     legend.form__legend Upload Your File
                     dl.form-group
@@ -47,7 +47,7 @@ html lang="en"
                         dt.form__dt
                         dd.form__dd
                             input.form__button type="submit" name='submit'          
-            table.row__block.table.files.block_hidden
+            table.row__block.table.files.block_private
                 caption.table__caption.screen-reader-text Your Files
                 colgroup.table__colgroup
 				    col.table__col.table__col-80
@@ -61,6 +61,6 @@ html lang="en"
                         th.table__th Name
                         th.table__th Remove
                 tbody.table__tbody
-        footer.row.footer.block_hidden
+        footer.row.footer.block_private
             p.row__block
                 a.link href="php/auth.php?logout=true" title="System won't identify you" Log Out

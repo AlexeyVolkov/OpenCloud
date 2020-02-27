@@ -5,8 +5,8 @@ function runRefresh() {
     document.body.style.cursor = 'progress';
     if (loggedin()) {
         fillFileTable();
-        unblockLogin();
     }
+    unblockLogin(loggedin());
     document.body.style.cursor = 'default';
 }
 function runAfterJSReady() {
@@ -237,27 +237,32 @@ function loginHandler(formLoginQuery = '#login') {
     });
 }
 
-function unblockLogin() {
+function unblockLogin(isPrivate) {
     /**
      * MAKE IT VISIBLE
      */
-    let privateBlocksQuery = '.block_hidden';
-    let publicInBlocksQuery = '.block_visible';
+    let privateBlocksQuery = '.block_private';
+    let publicInBlocksQuery = '.block_public';
     // grab reference to form
     let privateElems = document.querySelectorAll(privateBlocksQuery);
     let publicElems = document.querySelectorAll(publicInBlocksQuery);
-    // if the form exists
-    if (privateElems || null != privateElems || undefined != privateElems) {
-        privateElems.forEach(privateElem => {
-            privateElem.classList.remove('block_hidden');
-            privateElem.classList.add('block_visible');
-        });
-    }
-    if (publicElems || null != publicElems || undefined != publicElems) {
-        publicElems.forEach(publicElem => {
-            publicElem.classList.remove('block_visible');
-            publicElem.classList.add('block_hidden');
-        });
+
+    if (isPrivate) {// user is logged in
+        // show hidden blocks
+        if (privateElems || null != privateElems || undefined != privateElems) {
+            privateElems.forEach(privateElem => {
+                privateElem.classList.remove('block_private');
+            });
+        }
+        // hide public blocks
+        if (publicElems || null != publicElems || undefined != publicElems) {
+            publicElems.forEach(publicElem => {
+                publicElem.classList.remove('block_public');
+                publicElem.classList.add('block_hidden');
+            });
+        }
+    } else {// user is not logged in
+
     }
 
 }

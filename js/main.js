@@ -3,7 +3,5 @@ ready(function () {
     fillFileTable();
     handleUploadForm();
     // handleAddFolder();
-    if (loggedin()) {
-        unblockLogin();
-    }
+    unblockLogin(loggedin());
 });
