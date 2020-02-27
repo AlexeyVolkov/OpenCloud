@@ -30,7 +30,7 @@ if (
     if (0 >= $remove_file__id) {
         // Redirect to the index page:
         http_response_code(400);
-        header('Location: ' . WEBSITE_ADDRESS);
+        header('Location: ' . htmlspecialchars(WEBSITE_ADDRESS));
         exit();
     }
 
@@ -43,6 +43,6 @@ if (
     Opencloud__db_close($mysql);
     // Redirect to the index page:
     http_response_code(200);
-    header('Location: ' . WEBSITE_ADDRESS);
+    header('Location: ' . htmlspecialchars(WEBSITE_ADDRESS));
     exit();
 }

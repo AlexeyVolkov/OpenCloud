@@ -64,7 +64,7 @@ if (
     if (0 >= $download_file__id) {
         // Redirect to the index page:
         http_response_code(400);
-        header('Location: ' . WEBSITE_ADDRESS);
+        header('Location: ' . htmlspecialchars(WEBSITE_ADDRESS));
         exit();
     }
 
