@@ -102,7 +102,7 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
                         element['id'] + '" class="link link_folder">' + element['real_name'] + '</a>';
                 } else {
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
-                        element['id'] + '" class="link link_download">' + element['real_name'] + '</a>';
+                        element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
                 // cell3.innerHTML = '<a href="#" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
                 cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" title="Remove ' + element['real_name'] + '">Remove</a>';

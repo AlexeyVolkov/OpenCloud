@@ -3,9 +3,18 @@
 if (!function_exists('Opencloud__db_connect')) {
     function Opencloud__db_connect($host, $username, $password, $database)
     {
+        // filter input
+        $host = filter_var(trim($host), FILTER_SANITIZE_STRING);
+        $username = filter_var(trim($username), FILTER_SANITIZE_STRING);
+        $password = filter_var(trim($password), FILTER_SANITIZE_STRING);
+        $database = filter_var(trim($database), FILTER_SANITIZE_STRING);
+
         $mysqli = mysqli_connect($host, $username, $password, $database);
         if (mysqli_connect_errno()) {
-            return "Failed to connect to MySQL: " . mysqli_connect_error();
+            print 'Debug Info<hr><pre>';
+            print 'Failed to connect to MySQL @ Opencloud__db_connect' . '<br>';
+            print 'mysqli_connect_error:' . mysqli_connect_error() . '<br>';
+            print '<hr></pre>';
         }
         return $mysqli;
     }
@@ -22,11 +31,13 @@ if (!function_exists('Opencloud__db_close')) {
 if (!function_exists('Opencloud__db_get_files')) {
     function Opencloud__db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
     {
-        $files = false;
-        $files_showing = false;
+        // filter input
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
         $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
         $parent_folder_id = filter_var(trim($parent_folder_id), FILTER_SANITIZE_NUMBER_INT);
+        // set defaults
+        $files = false;
+        $files_showing = false;
 
         $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? AND `files`.`user_id`=? LIMIT 1;";
 
@@ -73,7 +84,12 @@ if (!function_exists('Opencloud__db_get_files')) {
             /* close statement */
             $stmt->close();
         } else {
-            $files[0]['error_text'] = 'Cannot prepare SQL @ Opencloud__db_put_file';
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__db_get_files' . '<br>';
+            print 'user_id:' . $user_id . '<br>';
+            print 'getID:' . $getID . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
         $sql = "SELECT `id`, `name` FROM `folders` WHERE `folders`.`parent_folder_id` = ? AND `folders`.`user__id` = ?;";
         /* create a prepared statement */
@@ -110,7 +126,12 @@ if (!function_exists('Opencloud__db_get_files')) {
             /* close statement */
             $stmt->close();
         } else {
-            $files[0]['error_text'] = 'Cannot prepare SQL @ Opencloud__db_put_file | folder';
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__db_get_files | folder' . '<br>';
+            print 'user_id:' . $user_id . '<br>';
+            print 'getID:' . $getID . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
         if ($files_showing) {
             return $files;
@@ -148,7 +169,18 @@ if (!function_exists('Opencloud__db_put_file')) {
 
             $flag = true;
         } else {
-            print 'Cannot prepare SQL @ Opencloud__db_put_file';
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__db_put_file' . '<br>';
+            print 'hash__name:' . $hash__name . '<br>';
+            print 'hash__file:' . $hash__file . '<br>';
+            print 'user_id:' . $user_id . '<br>';
+            print 'real_name:' . $real_name . '<br>';
+            print 'extension__id:' . $extension__id . '<br>';
+            print 'status__id:' . $status__id . '<br>';
+            print 'size:' . $size . '<br>';
+            print 'parent_folder__id:' . $parent_folder__id . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return $flag;
@@ -254,7 +286,13 @@ if (!function_exists('Opencloud__db_put_folder')) {
                 'status' => true
             );
         } else {
-            $answer = 'Cannot prepare SQL @ Opencloud__db_put_file';
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare statement @ Opencloud__db_put_folder' . '<br>';
+            print 'parent_folder_id:' . $parent_folder_id . '<br>';
+            print 'add_folder__user_id:' . $add_folder__user_id . '<br>';
+            print 'add_folder__name:' . $add_folder__name . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return $answer;
@@ -288,6 +326,12 @@ if (!function_exists('Opencloud__db_get_extension_type')) {
             }
             /* close statement */
             $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare statement @ Opencloud__db_get_extension_type' . '<br>';
+            print 'extension__id:' . $extension__id . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return $return_extension__type;
@@ -321,6 +365,12 @@ if (!function_exists('Opencloud__db_get_filePathById')) {
             }
             /* close statement */
             $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare statement @ Opencloud__db_get_filePathById' . '<br>';
+            print 'remove_file__id:' . $remove_file__id . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return TARGET_DIR . $return_path;
@@ -347,7 +397,11 @@ if (!function_exists('Opencloud__db_delete_file')) {
 
             $flag = true;
         } else {
-            print 'Cannot prepare SQL @ Opencloud__db_delete_file';
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare statement @ Opencloud__db_delete_file' . '<br>';
+            print 'remove_file__id:' . $remove_file__id . '<br>';
+            print 'mysqli->error:' . $mysqli->error . '<br>';
+            print '<hr></pre>';
         }
 
         return $flag;
