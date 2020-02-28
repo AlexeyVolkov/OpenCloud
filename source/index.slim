@@ -10,7 +10,7 @@ html lang="en"
         script src="script.js"
     body
         main.row
-            form.form.row__block.block_public#login action="https://volkov.best/projects/napopravku/php/auth.php" method="post"
+            form.form.row__block.block_public#login action="php/auth.php" method="post"
                 fieldset.form__fieldset
 					legend.form__legend Login
 					dl.form-group
@@ -35,7 +35,7 @@ html lang="en"
 							small.form__text_small.text_italic
 								| Both fields are required
 
-            form.form.row__block.upload.block_private#upload_form method='post' action='https://volkov.best/projects/napopravku/php/upload.php' enctype="multipart/form-data"
+            form.form.row__block.upload.block_private#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
                 fieldset.form__fieldset
                     legend.form__legend Upload Your File
                     dl.form-group
@@ -63,4 +63,4 @@ html lang="en"
                 tbody.table__tbody
         footer.row.footer.block_private
             p.row__block
-                a.link href="https://volkov.best/projects/napopravku/php/auth.php?logout=true" title="System won't identify you" Log Out
+                a.link href="php/auth.php?logout=true" title="System won't identify you" Log Out

@@ -1,7 +1,8 @@
 ready(function () {
     loginHandler();
-    fillFileTable();
+    refreshTable();
     handleUploadForm();
     // handleAddFolder();
     unblockLogin(loggedin());
+
 });

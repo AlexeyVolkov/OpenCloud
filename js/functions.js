@@ -4,13 +4,15 @@
 function runRefresh() {
     document.body.style.cursor = 'progress';
     if (loggedin()) {
-        fillFileTable();
+        refreshTable();
+        handleRenameLinks();
     }
     unblockLogin(loggedin());
     document.body.style.cursor = 'default';
 }
 function runAfterJSReady() {
     handleRenameLinks();
+    removeLinkConfirm();
 }
 /**
  * UPLOAD FORM HANDLER
@@ -41,7 +43,7 @@ function handleUploadForm(formQuery = '.upload') {
 /**
  * FILES` LIST HANDLER
  */
-function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_folder_id = 0) {
+function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folder_id = 0) {
     if (!loggedin()) {
         console.warn('please, login to see your files');
         return;
@@ -105,11 +107,11 @@ function fillFileTable(filesListQuery = '.files tbody', user_id = 1, parent_fold
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
                 // cell3.innerHTML = '<a href="#" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
-                cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" title="Remove ' + element['real_name'] + '">Remove</a>';
-
-                // run content-rely code
-                runAfterJSReady();
+                cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
             });
+
+            // run content-rely code
+            runAfterJSReady();
         } else {
             // We reached our target server, but it returned an error
             return false;
@@ -134,18 +136,13 @@ function handleRenameLinks(linksQuery = '.link_rename') {
         console.debug("Cannot find links: " + linksQuery);
         return;
     }
-    linksElem.forEach(function (linkElem) {
+    linksElem.forEach(linkElem => {
         // rename click handler
         linkElem.addEventListener('click', function (event) {
-            event.stopPropagation();
-            event.preventDefault();
-            console.debug(event);
-
             let sign = prompt("Rename File", linkElem.dataset.file__name);
 
             console.log(sign);
-            return;
-        }, true);
+        });
     });
 }
 
@@ -265,4 +262,30 @@ function unblockLogin(isPrivate) {
 
     }
 
+}
+
+/**
+ * Add event to all Remove File links.
+ * Confirm removing.
+ * 
+ * @param string removeLinksQuery 
+ */
+function removeLinkConfirm(removeLinksQuery = '.link_remove') {
+    // grab reference to remove links
+    const removeLinkElems = document.querySelectorAll(removeLinksQuery);
+    // if the remove links exists
+    if (null === removeLinkElems || undefined === removeLinkElems || 0 >= removeLinkElems.length) {
+        console.log("Cannot find remove links: " + removeLinksQuery);
+        return;
+    }
+    removeLinkElems.forEach(removeLinkElem => {
+        // remove Links handler
+        removeLinkElem.addEventListener('click', function (e) {
+            var confirmation = window.confirm("Do you really want to remove " + removeLinkElem.dataset.real_name + " ?");
+            if (!confirmation) {
+                // stop removing file
+                e.preventDefault();
+            }
+        });
+    });
 }
