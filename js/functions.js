@@ -30,6 +30,7 @@ function runAfterJSReady() {
 
     removeLinkConfirm();
     renameLinkPrompt();
+    publicLinkConfirm();
 
     endProgress();
 }
@@ -112,10 +113,12 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
                 let cell2 = row.insertCell(0);
                 let cell3 = row.insertCell(1);
                 let cell4 = row.insertCell(2);
-                // let cell4 = row.insertCell(3);
+                let cell5 = row.insertCell(3);
+
                 cell2.className = 'table__td';
                 cell3.className = 'table__td';
                 cell4.className = 'table__td';
+                cell5.className = 'table__td';
 
                 // Add some text to the new cells:
                 // cell1.innerHTML = element['upload_date'];
@@ -128,6 +131,7 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
                 }
                 cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
                 cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
+                cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
             });
 
             // run content-rely code
@@ -338,6 +342,59 @@ function removeLinkConfirm(removeLinksQuery = '.link_remove') {
                 e.preventDefault();
                 endProgress();
             }
+        });
+    });
+}
+
+/**
+ * Add event to all Public File links.
+ * Shows public link.
+ * 
+ * @param string publicLinksQuery 
+ */
+function publicLinkConfirm(publicLinksQuery = '.link_public') {
+    // grab reference to remove links
+    const publicLinkElems = document.querySelectorAll(publicLinksQuery);
+    // if the remove links exists
+    if (null === publicLinkElems || undefined === publicLinkElems || 0 >= publicLinkElems.length) {
+        console.log("Cannot find public links: " + publicLinksQuery);
+        return;
+    }
+    publicLinkElems.forEach(publicLinkElem => {
+        // remove Links handler
+        publicLinkElem.addEventListener('click', function (e) {
+            e.preventDefault();
+            startProgress();
+            //
+            // AJAX rename file
+            //
+            // 1. form request
+            let formData = new FormData();
+            formData.append("get_public_link", 'true');
+            formData.append("file__id", publicLinkElem.dataset.file__id);
+            let url = 'php/download.php';
+            // 2. send request
+            var request = new XMLHttpRequest();
+            request.open('POST', url, true);
+            request.onload = function () {
+                if (this.status >= 200 && this.status < 400) {
+                    // 3. Success!
+                    var answer = JSON.parse(this.response);
+                    // if the publicLink exists
+                    if (!answer || null == answer || undefined == answer || 0 == answer.length) {
+                        console.debug("Cannot answer: ");
+                        console.debug(formData);
+                        return;
+                    }
+                    alert('/download.php?public_link=' + answer['public_link']);
+                    runRefresh();
+                } else {
+                    console.debug('We reached our target server, but it returned an error');
+                    return false;
+                }
+                endProgress();
+            };
+            request.send(formData);
         });
     });
 }

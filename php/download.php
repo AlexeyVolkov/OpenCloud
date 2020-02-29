@@ -80,3 +80,63 @@ if (
 
     Opencloud__Db_close($mysql);
 }
+
+if (
+    $_POST
+    && isset($_POST['get_public_link'])
+    && !empty($_POST['get_public_link'])
+    && isset($_POST['file__id'])
+    && !empty($_POST['file__id'])
+    && $_COOKIE
+    && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
+    && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])
+    && 1 == $_COOKIE[COOKIE__USER_LOGGED_IN]
+    && isset($_COOKIE[COOKIE__USER_NAME])
+    && !empty($_COOKIE[COOKIE__USER_NAME])
+    && isset($_COOKIE[COOKIE__USER_ID])
+    && !empty($_COOKIE[COOKIE__USER_ID])
+) {
+    // open connection
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
+    /**
+     * Security check
+     */
+    if (!Opencloud__Db_check_login($mysql)) {
+        http_response_code(401);
+        print 'You cannot download file.';
+        return false;
+    }
+
+    // filter input
+    $file__id = filter_input(INPUT_POST, 'file__id', FILTER_SANITIZE_NUMBER_INT);
+    $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+    $public_link = Opencloud__Db_get_public_link($mysql, $file__id);
+    if ($public_link) {
+        http_response_code(200);
+        $answer = array(
+            'public_link' => htmlspecialchars($public_link)
+        );
+        header('Content-Type: application/json');
+        echo json_encode($answer);
+    } else {
+        http_response_code(400);
+        print 'No link found.';
+    }
+
+    Opencloud__Db_close($mysql);
+}
+
+/**
+ * Public Download Link Handler.
+ * Shows file
+ * 
+ * @param string $public_link
+ * 
+ * @return void
+ */
+if (
+    $_GET
+    && isset($_GET['public_link'])
+    && !empty($_GET['public_link'])
+) {
+}

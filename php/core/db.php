@@ -633,9 +633,10 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
     /**
      * Generates public link to download file
      * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
      * @param int $file__id File ID
      * 
-     * @return string Relative Link
+     * @return string|false Relative Link
      */
     function Opencloud__Db_get_public_link($mysqli, $file__id)
     {
@@ -647,22 +648,58 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
         // filter input
         $file__id = filter_var(trim($file__id), FILTER_SANITIZE_NUMBER_INT);
         $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
-        $link =
-            /** FILENAME HASH */
-            // set defaults
-            $public_link = false;
+        $file__name = false;
+
+        $sql = 'SELECT `real_name` FROM `files` WHERE `user_id` = ? AND `id` = ? LIMIT 1';
+        if ($stmt = $mysqli->prepare($sql)) {
+            // Bind parameters (s = string, i = int, b = blob, etc)
+            $stmt->bind_param('ii', $user__id, $file__id);
+            $stmt->execute();
+            /* bind result variables */
+            $stmt->bind_result($file__name);
+            $stmt->fetch();
+            /* close statement */
+            $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__Db_get_public_link' . '<br>';
+            print 'file__id:' . htmlspecialchars($file__id) . '<br>';
+            print 'user__id:' . htmlspecialchars($user__id) . '<br>';
+            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
+            print '<hr></pre>';
+        }
+        if (!$file__name) {
+            http_response_code(400);
+            print 'Debug Info<hr><pre>';
+            print 'Cannot find file @ Opencloud__Db_rename' . '<br>';
+            print 'file__id:' . htmlspecialchars($file__id) . '<br>';
+            print 'user__id:' . htmlspecialchars($user__id) . '<br>';
+            print 'file__name:' . htmlspecialchars($file__name) . '<br>';
+            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
+            print '<hr></pre>';
+            return false;
+        }
+        $public_link = hash('ripemd160', $file__name);
         /* create a prepared statement */
+        /*
+            PROCEDURE selectInsertPublicLink(
+                IN file__id_in INT,
+                IN user__id_in INT,
+                IN link_in VARCHAR(255)
+            )
+                IF NOT EXISTS
+                    ( SELECT `id` FROM `public_links`
+                    WHERE
+                        `public_links`.`file__id` = file__id_in AND `public_links`.`user__id` = user__id_in
+                ) THEN
+            INSERT INTO `public_links`(`id`, `link`, `file__id`)
+            VALUES(NULL, link_in, file__id_in) ;
+         */
         $sql = 'CALL selectInsertPublicLink(?, ?, ?);';
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
-            $stmt->bind_param('sii', $file__id, $user__id, $link);
+            $stmt->bind_param('sii', $file__id, $user__id, $public_link);
             $stmt->execute();
-            // Store the result so we can check if it exists in the database.
-            $stmt->store_result();
-            // if anything was updated
-            if ($stmt->affected_rows > 0) {
-                $file_renamed = true;
-            }
             /* close statement */
             $stmt->close();
         } else {
@@ -674,6 +711,6 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
             print '<hr></pre>';
         }
 
-        return $file_renamed;
+        return $public_link;
     }
 }
