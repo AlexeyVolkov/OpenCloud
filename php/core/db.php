@@ -578,3 +578,53 @@ if (!function_exists('Opencloud__Db_check_login')) {
         }
     }
 }
+
+
+if (!function_exists('Opencloud__Db_rename')) {
+    /**
+     * Update Name
+     * 
+     * @param int $file__id File ID
+     * @param string $file__name New File name
+     * 
+     * @return bool Was it renamed?
+     */
+    function Opencloud__Db_rename($mysqli, $file__id, $file__name)
+    {
+        if (!Opencloud__Db_check_login($mysqli)) {
+            http_response_code(401);
+            print 'You cannot rename files.';
+            return false;
+        }
+        // filter input
+        $file__id = filter_var(trim($file__id), FILTER_SANITIZE_NUMBER_INT);
+        $file__name = filter_var(trim($file__name), FILTER_SANITIZE_STRING);
+        $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+        // set defaults
+        $file_renamed = false;
+        /* create a prepared statement */
+        $sql = 'UPDATE `files` SET `real_name` = ? WHERE `files`.`id` = ? AND `files`.`user_id` = ?;';
+        if ($stmt = $mysqli->prepare($sql)) {
+            // Bind parameters (s = string, i = int, b = blob, etc)
+            $stmt->bind_param('sii', $file__name, $file__id, $user__id);
+            $stmt->execute();
+            // Store the result so we can check if it exists in the database.
+            $stmt->store_result();
+            // if anything was updated
+            if ($stmt->affected_rows > 0) {
+                $file_renamed = true;
+            }
+            /* close statement */
+            $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__Db_rename' . '<br>';
+            print 'file__id:' . htmlspecialchars($file__id) . '<br>';
+            print 'file__name:' . htmlspecialchars($file__name) . '<br>';
+            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
+            print '<hr></pre>';
+        }
+
+        return $file_renamed;
+    }
+}

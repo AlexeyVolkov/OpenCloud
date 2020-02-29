@@ -2,17 +2,36 @@
  * Functions Run After Refresh
  */
 function runRefresh() {
-    document.body.style.cursor = 'progress';
+    startProgress();
     if (loggedin()) {
         refreshTable();
-        handleRenameLinks();
     }
     unblockLogin(loggedin());
+    endProgress();
+}
+/**
+ * Informing that some proccess started
+ * 
+ * @returns void
+ */
+function startProgress() {
+    document.body.style.cursor = 'progress';
+}
+/**
+ * Informing that some proccess finished
+ *
+ * @returns void
+ */
+function endProgress() {
     document.body.style.cursor = 'default';
 }
 function runAfterJSReady() {
-    handleRenameLinks();
+    startProgress();
+
     removeLinkConfirm();
+    renameLinkPrompt();
+
+    endProgress();
 }
 /**
  * UPLOAD FORM HANDLER
@@ -91,10 +110,11 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
 
                 // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
                 let cell2 = row.insertCell(0);
-                let cell4 = row.insertCell(1);
-                // let cell3 = row.insertCell(2);
+                let cell3 = row.insertCell(1);
+                let cell4 = row.insertCell(2);
                 // let cell4 = row.insertCell(3);
                 cell2.className = 'table__td';
+                cell3.className = 'table__td';
                 cell4.className = 'table__td';
 
                 // Add some text to the new cells:
@@ -106,7 +126,7 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
-                // cell3.innerHTML = '<a href="#" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
+                cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
                 cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
             });
 
@@ -124,24 +144,54 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
     }
 }
 
-
 /**
- * Rename Links Event
+ * Add event to all Rename File links.
+ * Sends AJAX for renaming file.
+ * 
+ * @param string renameLinksQuery
+ * 
+ * @return void
  */
-function handleRenameLinks(linksQuery = '.link_rename') {
-    // grab reference to form
-    const linksElem = document.querySelectorAll(linksQuery);
-    // if the form exists
-    if (!linksElem || null == linksElem || undefined == linksElem || 0 == linksElem.length) {
-        console.debug("Cannot find links: " + linksQuery);
+function renameLinkPrompt(renameLinksQuery = '.link_rename') {
+    // grab reference to rename links
+    const renameLinkElems = document.querySelectorAll(renameLinksQuery);
+    // if the rename links exists
+    if (null === renameLinkElems || undefined === renameLinkElems || 0 >= renameLinkElems.length) {
+        console.log("Cannot find rename links: " + renameLinksQuery);
         return;
     }
-    linksElem.forEach(linkElem => {
-        // rename click handler
-        linkElem.addEventListener('click', function (event) {
-            let sign = prompt("Rename File", linkElem.dataset.file__name);
-
-            console.log(sign);
+    renameLinkElems.forEach(renameLinkElem => {
+        // rename Links handler
+        renameLinkElem.addEventListener('click', function (e) {
+            // if AJAX - stop redirect
+            e.preventDefault();
+            var newFileName = window.prompt("New name:", renameLinkElem.dataset.file__name);
+            if (!newFileName || newFileName == renameLinkElem.dataset.file__name) {
+                return false;
+            }
+            startProgress();
+            //
+            // AJAX rename file
+            //
+            // 1. form request
+            let formData = new FormData();
+            formData.append("file__rename", 'true');
+            formData.append("file__id", renameLinkElem.dataset.file__id);
+            formData.append("file__name", newFileName);
+            let url = 'php/update.php';
+            // 2. send request
+            var request = new XMLHttpRequest();
+            request.open('POST', url, true);
+            request.onload = function () {
+                if (this.status >= 200 && this.status < 400) {
+                    // 3. Success!
+                    runRefresh();
+                } else {
+                    console.debug('We reached our target server, but it returned an error');
+                    return false;
+                }
+            };
+            request.send(formData);
         });
     });
 }
@@ -286,6 +336,7 @@ function removeLinkConfirm(removeLinksQuery = '.link_remove') {
                 // stop removing file
                 e.preventDefault();
             }
+            startProgress();
         });
     });
 }

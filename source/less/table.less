@@ -10,45 +10,48 @@ Fixed Table Layouts
 */
 
 .table {
-  table-layout: fixed;
-  width: 80%;
-  white-space: nowrap;
-  border-spacing: 0;
+	table-layout: fixed;
+	width: 80%;
+	white-space: nowrap;
+	border-spacing: 0;
 }
 .table__thead,
 .table__tfoot {
-  background-color: @notice_back;
+	background-color: @notice_back;
 }
 .table__tbody {
-  font-family: @mono;
+	font-family: @mono;
 }
 .table__caption {
-  font-family: @mono;
+	font-family: @mono;
 }
 
 .table__td,
 .table__th {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 
-  padding: 0.2rem 0;
-  border-bottom: thin solid #d4d4d4;
-  border-top: thin solid #d4d4d4;
+	padding: 0.2rem 0;
+	border-bottom: thin solid #d4d4d4;
+	border-top: thin solid #d4d4d4;
 }
 .table__tr {
-  &:hover,
-  &:focus,
-  &:focus-within {
-    background-color: #e9e9e9 !important;
-  }
-  &:nth-child(odd) {
-    background-color: #f9f9f9;
-  }
+	&:hover,
+	&:focus,
+	&:focus-within {
+		background-color: #e9e9e9 !important;
+	}
+	&:nth-child(odd) {
+		background-color: #f9f9f9;
+	}
 }
 .table__col-80 {
-  width: 80%;
+	width: 80%;
 }
 .table__col-20 {
-  width: 20%;
+	width: 20%;
+}
+.table__col-10 {
+	width: 10%;
 }
