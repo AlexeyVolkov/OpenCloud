@@ -332,11 +332,12 @@ function removeLinkConfirm(removeLinksQuery = '.link_remove') {
         // remove Links handler
         removeLinkElem.addEventListener('click', function (e) {
             var confirmation = window.confirm("Do you really want to remove " + removeLinkElem.dataset.real_name + " ?");
+            startProgress();
             if (!confirmation) {
                 // stop removing file
                 e.preventDefault();
+                endProgress();
             }
-            startProgress();
         });
     });
 }

@@ -628,3 +628,52 @@ if (!function_exists('Opencloud__Db_rename')) {
         return $file_renamed;
     }
 }
+
+if (!function_exists('Opencloud__Db_get_public_link')) {
+    /**
+     * Generates public link to download file
+     * 
+     * @param int $file__id File ID
+     * 
+     * @return string Relative Link
+     */
+    function Opencloud__Db_get_public_link($mysqli, $file__id)
+    {
+        if (!Opencloud__Db_check_login($mysqli)) {
+            http_response_code(401);
+            print 'You cannot get a link.';
+            return false;
+        }
+        // filter input
+        $file__id = filter_var(trim($file__id), FILTER_SANITIZE_NUMBER_INT);
+        $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+        $link =
+            /** FILENAME HASH */
+            // set defaults
+            $public_link = false;
+        /* create a prepared statement */
+        $sql = 'CALL selectInsertPublicLink(?, ?, ?);';
+        if ($stmt = $mysqli->prepare($sql)) {
+            // Bind parameters (s = string, i = int, b = blob, etc)
+            $stmt->bind_param('sii', $file__id, $user__id, $link);
+            $stmt->execute();
+            // Store the result so we can check if it exists in the database.
+            $stmt->store_result();
+            // if anything was updated
+            if ($stmt->affected_rows > 0) {
+                $file_renamed = true;
+            }
+            /* close statement */
+            $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__Db_rename' . '<br>';
+            print 'file__id:' . htmlspecialchars($file__id) . '<br>';
+            print 'file__name:' . htmlspecialchars($file__name) . '<br>';
+            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
+            print '<hr></pre>';
+        }
+
+        return $file_renamed;
+    }
+}
