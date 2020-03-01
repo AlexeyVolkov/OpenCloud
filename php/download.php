@@ -26,11 +26,20 @@ if (
     }
 
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+    $parent_folder__id = 1;
+    if (isset($_POST['parent_folder__id'])) {
+        $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
+    }
 
-    $files = Opencloud__Db_get_files($mysql, $user__id);
-
-    header('Content-Type: application/json');
-    echo json_encode($files);
+    $files = Opencloud__Db_Get_files($mysql, $user__id, $parent_folder__id);
+    if ($files) {
+        http_response_code(200);
+        header('Content-Type: application/json');
+        echo json_encode($files);
+    } else {
+        http_response_code(400);
+        print 'Cannot get files';
+    }
     Opencloud__Db_close($mysql);
 }
 
@@ -58,24 +67,26 @@ if (
     }
 
     // filter input
-    $download_file__id = filter_input(INPUT_GET, 'download_file__id', FILTER_SANITIZE_NUMBER_INT);
+    $file__id = filter_input(INPUT_GET, 'download_file__id', FILTER_SANITIZE_NUMBER_INT);
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
 
-    if (0 >= $download_file__id) {
+    if (0 >= $file__id) {
         // Redirect to the index page:
         http_response_code(400);
         header('Location: ' . htmlspecialchars(WEBSITE_ADDRESS));
         exit();
     }
-
-    $files = Opencloud__Db_get_files($mysql, $user__id, $download_file__id);
-
-    foreach ($files as $file) {
+    $file = Opencloud__Db_Get_file($mysql, $user__id, $file__id);
+    if ($file) {
+        http_response_code(200);
         $hash__path = TARGET_DIR . $file['hash__name'];
-        $type = Opencloud__Db_get_extension_type($mysql, $file['extension__id']);
+        $type = $file['type'];
         header('Content-Type: ' . $type);
         header("Content-disposition: attachment; filename=\"" . basename(htmlspecialchars($file['real_name'])) . "\"");
         readfile($hash__path);
+    } else {
+        http_response_code(400);
+        print 'Cannot get file';
     }
 
     Opencloud__Db_close($mysql);

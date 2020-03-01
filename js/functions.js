@@ -122,16 +122,18 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
 
                 // Add some text to the new cells:
                 // cell1.innerHTML = element['upload_date'];
-                if ('folder' == element['type']) {
+                if (2 == element['type']) {
                     cell2.innerHTML = '<a href="#folder' +
                         element['id'] + '" class="link link_folder">' + element['real_name'] + '</a>';
-                } else {
+                } else if (1 == element['type']) {
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
                 cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
                 cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
-                cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
+                if (1 == element['type']) {
+                    cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
+                }
             });
 
             // run content-rely code

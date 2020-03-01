@@ -12,7 +12,7 @@
  * 
  * Opencloud__Db_connect
  * Opencloud__Db_close
- * Opencloud__Db_get_files
+ * Opencloud__Db_Get_files
  * Opencloud__Db_put_file
  * Opencloud__Db_get_extension_id
  * Opencloud__Db_put_extension
@@ -71,47 +71,50 @@ if (!function_exists('Opencloud__Db_close')) {
     }
 }
 
-if (!function_exists('Opencloud__Db_get_files')) {
+if (!function_exists('Opencloud__Db_Get_files')) {
     /**
      * Returns list of files
      * 
      * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
      * @param int $user_id User ID.
-     * @param int $getID File ID.
      * @param int $parent_folder_id Parent folder ID.
      * 
      * @return array|false List of files
      */
-    function Opencloud__Db_get_files($mysqli, $user_id = 1, $getID = 0, $parent_folder_id = 0)
+    function Opencloud__Db_Get_files($mysqli, $user_id = 1, $parent_folder_id = 1)
     {
         // filter input
         $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
-        $getID = filter_var(trim($getID), FILTER_SANITIZE_NUMBER_INT);
         $parent_folder_id = filter_var(trim($parent_folder_id), FILTER_SANITIZE_NUMBER_INT);
         // set defaults
         $files = false;
         $files_showing = false;
-
-        $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`id`=? AND `files`.`user_id`=? LIMIT 1;";
-
-        if (0 == $getID) {
-            $sql = "SELECT `upload_date`, `user_id`, `real_name`, `id`, `hash__name`, `extension__id` FROM `files` WHERE `files`.`user_id` = ?;";
-        }
+        // GET all the files and folders
+        $sql = <<< SQL
+        SELECT
+            `upload_date`,
+            `user_id`,
+            `real_name`,
+            `id`,
+            `hash__name`,
+            `extension__id`,
+            `type`
+        FROM
+            `files`
+        WHERE
+            `files`.`user_id` = ? AND `files`.`parent_folder__id` = ?;
+        SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
 
             /* bind parameters for markers */
-            if (0 == $getID) {
-                $stmt->bind_param("i", $user_id);
-            } else {
-                $stmt->bind_param("ii", $getID, $user_id);
-            }
+            $stmt->bind_param("ii", $user_id, $parent_folder_id);
 
             /* execute query */
             $stmt->execute();
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__id);
+            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__id, $type);
 
             /* fetch values */
             while ($stmt->fetch()) {
@@ -122,7 +125,7 @@ if (!function_exists('Opencloud__Db_get_files')) {
                     'id' => htmlentities($id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'extension__id' => htmlentities($extension__id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'type' => 'file'
+                    'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8")
                 );
             }
             if (0 == $stmt->num_rows) {
@@ -138,49 +141,7 @@ if (!function_exists('Opencloud__Db_get_files')) {
             $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__Db_get_files' . '<br>';
-            print 'user_id:' . htmlspecialchars($user_id) . '<br>';
-            print 'getID:' . htmlspecialchars($getID) . '<br>';
-            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
-            print '<hr></pre>';
-        }
-        $sql = "SELECT `id`, `name` FROM `folders` WHERE `folders`.`parent_folder_id` = ? AND `folders`.`user__id` = ?;";
-        /* create a prepared statement */
-        if ($stmt = $mysqli->prepare($sql)) {
-            /* bind parameters for markers */
-            $stmt->bind_param("ii", $parent_folder_id,  $user_id);
-            /* execute query */
-            $stmt->execute();
-            /* bind result variables */
-            $stmt->bind_result($folder__id, $folder__name);
-            /* fetch values */
-            while ($stmt->fetch()) {
-                $files[] = array(
-                    'upload_date' => '0000-00-00 00:00:00',
-                    'user_id' => htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'real_name' => htmlentities($folder__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'id' => htmlentities($folder__id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'hash__name' => '',
-                    'extension__id' => 0,
-                    'type' => 'folder'
-                );
-            }
-            if (0 == $stmt->num_rows) {
-                $files[0]['error_text'] = 'There are '
-                    . htmlentities($stmt->num_rows, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
-                    ' folders [user_id:'
-                    . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
-                    ', parent_folder_id:'
-                    . htmlentities($parent_folder_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
-                    ']';
-            } else {
-                $files_showing = true;
-            }
-            /* close statement */
-            $stmt->close();
-        } else {
-            print 'Debug Info<hr><pre>';
-            print 'Cannot prepare SQL @ Opencloud__Db_get_files | folder' . '<br>';
+            print 'Cannot prepare SQL @ Opencloud__Db_Get_files' . '<br>';
             print 'user_id:' . htmlspecialchars($user_id) . '<br>';
             print 'getID:' . htmlspecialchars($getID) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
@@ -194,6 +155,80 @@ if (!function_exists('Opencloud__Db_get_files')) {
     }
 }
 
+if (!function_exists('Opencloud__Db_Get_file')) {
+    /**
+     * Returns array of file
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * @param int $user_id User ID.
+     * @param int $file__id File ID.
+     * 
+     * @return array|false Array of file
+     */
+    function Opencloud__Db_Get_file($mysqli, $user_id, $file__id)
+    {
+        // filter input
+        $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
+        $file__id = filter_var(trim($file__id), FILTER_SANITIZE_NUMBER_INT);
+        // set defaults
+        $file = false;
+        $file_showing = false;
+        // GET all the files and folders
+        $sql = <<< SQL
+        SELECT
+            `upload_date`,
+            `real_name`,
+            `hash__name`,
+            `extensions`.`type`
+        FROM
+            `files`
+        INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
+        WHERE
+            `files`.`user_id` = ? AND `files`.`id` = ? AND `files`.`type` = 1
+        LIMIT 1;
+        SQL;
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare($sql)) {
+            /* bind parameters for markers */
+            $stmt->bind_param("ii", $user_id, $file__id);
+            /* execute query */
+            $stmt->execute();
+            /* bind result variables */
+            $stmt->bind_result($upload_date, $real_name, $hash__name, $type);
+            /* fetch values */
+            $stmt->fetch();
+            if ($upload_date) {
+                $file = array(
+                    'upload_date' => htmlentities($upload_date, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'real_name' => htmlentities($real_name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8")
+                );
+                $file_showing = true;
+            } else {
+                $file['error_text'] = 'There are '
+                    . htmlentities($stmt->num_rows, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ' files [user_id:'
+                    . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
+                    ']';
+            }
+            /* close statement */
+            $stmt->close();
+        } else {
+            print 'Debug Info<hr><pre>';
+            print 'Cannot prepare SQL @ Opencloud__Db_Get_files' . '<br>';
+            print 'user_id:' . htmlspecialchars($user_id) . '<br>';
+            print 'getID:' . htmlspecialchars($getID) . '<br>';
+            print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
+            print '<hr></pre>';
+        }
+        if ($file_showing) {
+            return $file;
+        } else {
+            return false;
+        }
+    }
+}
 
 if (!function_exists('Opencloud__Db_put_file')) {
     /**
