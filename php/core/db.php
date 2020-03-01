@@ -687,18 +687,18 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
                 IN user__id_in INT,
                 IN link_in VARCHAR(255)
             )
-                IF NOT EXISTS
-                    ( SELECT `id` FROM `public_links`
-                    WHERE
-                        `public_links`.`file__id` = file__id_in AND `public_links`.`user__id` = user__id_in
-                ) THEN
+            IF NOT EXISTS
+                ( SELECT `id` FROM `public_links`
+                WHERE
+                    `public_links`.`file__id` = file__id_in AND `public_links`.`link` = link_in
+            ) THEN
             INSERT INTO `public_links`(`id`, `link`, `file__id`)
             VALUES(NULL, link_in, file__id_in) ;
          */
         $sql = 'CALL selectInsertPublicLink(?, ?, ?);';
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
-            $stmt->bind_param('sii', $file__id, $user__id, $public_link);
+            $stmt->bind_param('iis', $file__id, $user__id, $public_link);
             $stmt->execute();
             /* close statement */
             $stmt->close();
@@ -712,5 +712,64 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
         }
 
         return $public_link;
+    }
+}
+
+
+if (!function_exists('Opencloud__Db_Get_Public_file')) {
+    /**
+     * Returns one file
+     * 
+     * @param mysqli $mysqli Object which represents the connection to a MySQL Server.
+     * @param string $public_link Public link.
+     * 
+     * @return array|false File
+     */
+    function Opencloud__Db_Get_Public_file($mysqli, $public_link)
+    {
+        // filter input
+        $public_link = filter_var(trim($public_link), FILTER_SANITIZE_STRING);
+        // set defaults
+        $answer = false;
+
+        $sql = <<<SQL
+            SELECT
+                `files`.`real_name`,
+                `files`.`hash__name`,
+                `extensions`.`type`
+            FROM
+                `files`
+            INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
+            INNER JOIN `public_links` ON `files`.`id` = `public_links`.`file__id`
+            WHERE
+                `public_links`.`link` = ?
+            LIMIT 1;
+        SQL;
+
+        /* create a prepared statement */
+        if ($stmt = $mysqli->prepare($sql)) {
+            /* bind parameters for markers */
+            $stmt->bind_param("s", $public_link);
+            /* execute query */
+            $stmt->execute();
+            /* bind result variables */
+            $stmt->bind_result($real_name, $hash__name, $type);
+
+            /* fetch values */
+            $stmt->fetch();
+            if ($real_name) {
+                http_response_code(200);
+                $answer = array(
+                    'real_name' => $real_name,
+                    'hash__name' => $hash__name,
+                    'type' => $type
+                );
+            } else {
+                http_response_code(400);
+            }
+            /* close statement */
+            $stmt->close();
+        }
+        return $answer;
     }
 }

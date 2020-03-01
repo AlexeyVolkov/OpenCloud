@@ -139,4 +139,31 @@ if (
     && isset($_GET['public_link'])
     && !empty($_GET['public_link'])
 ) {
+    // open connection
+    $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
+    /**
+     * Security check
+     */
+    if (!Opencloud__Db_check_login($mysql)) {
+        http_response_code(401);
+        print 'You cannot see files.';
+        return false;
+    }
+
+    // filter input
+    $public_link = filter_input(INPUT_GET, 'public_link', FILTER_SANITIZE_STRING);
+
+    $file = Opencloud__Db_Get_Public_file($mysql, $public_link);
+    if ($file) {
+        http_response_code(200);
+        $hash__path = TARGET_DIR . $file['hash__name'];
+        $type = $file['type'];
+        header('Content-Type: ' . $type);
+        header("Content-disposition: attachment; filename=\"" . basename(htmlspecialchars($file['real_name'])) . "\"");
+        readfile($hash__path);
+    } else {
+        http_response_code(400);
+        print 'Cannot find public file';
+    }
+    Opencloud__Db_close($mysql);
 }
