@@ -25,12 +25,18 @@ function startProgress() {
 function endProgress() {
     document.body.style.cursor = 'default';
 }
+/**
+ * Run scripts after table refresh
+ * 
+ * @returns {void} Execute scripts inside
+ */
 function runAfterJSReady() {
     startProgress();
 
     removeLinkConfirm();
     renameLinkPrompt();
     publicLinkConfirm();
+    folderLink();
 
     endProgress();
 }
@@ -61,9 +67,14 @@ function handleUploadForm(formQuery = '.upload') {
 }
 
 /**
- * FILES` LIST HANDLER
+ * Fill table with Files & Folders
+ * 
+ * @param {string} filesListQuery 
+ * @param {string} parent_folder_id 
+ * 
+ * @returns {void} Refresh table with Files
  */
-function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folder_id = 0) {
+function refreshTable(filesListQuery = '.files tbody', parent_folder_id = 1) {
     if (!loggedin()) {
         console.warn('please, login to see your files');
         return;
@@ -83,6 +94,7 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
     // 1. form request
     let formData = new FormData();
     formData.append("files_list", "true");
+    formData.append("parent_folder__id", parent_folder_id);
     let url = 'php/download.php';
     // 2. send request
     var request = new XMLHttpRequest();
@@ -124,7 +136,8 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
                 // cell1.innerHTML = element['upload_date'];
                 if (2 == element['type']) {
                     cell2.innerHTML = '<a href="#folder' +
-                        element['id'] + '" class="link link_folder">' + element['real_name'] + '</a>';
+                        element['id'] + '" class="link link_folder" data-folder__id="' +
+                        element['id'] + '">' + element['real_name'] + '</a>';
                 } else if (1 == element['type']) {
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
@@ -140,6 +153,7 @@ function refreshTable(filesListQuery = '.files tbody', user_id = 1, parent_folde
             runAfterJSReady();
         } else {
             // We reached our target server, but it returned an error
+            // or zero files found
             return false;
         }
     };
@@ -397,6 +411,34 @@ function publicLinkConfirm(publicLinksQuery = '.link_public') {
                 endProgress();
             };
             request.send(formData);
+        });
+    });
+}
+
+/**
+ * Add event to all Folder links.
+ * Refresh table with a parent folder ID.
+ * 
+ * @param {string} folderLinksQuery
+ * 
+ * @returns {void} Call refreshTable
+ */
+function folderLink(folderLinksQuery = '.link_folder') {
+    // grab reference to remove links
+    const folderLinkElems = document.querySelectorAll(folderLinksQuery);
+    // if the remove links exists
+    if (null === folderLinkElems || undefined === folderLinkElems || 0 >= folderLinkElems.length) {
+        console.log("Cannot find folder links: " + folderLinksQuery);
+        return;
+    }
+    folderLinkElems.forEach(folderLinkElem => {
+        // remove Links handler
+        folderLinkElem.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            refreshTable('.files tbody', folderLinkElem.dataset.folder__id);
+
+            startProgress();
         });
     });
 }

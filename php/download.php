@@ -5,6 +5,9 @@ require 'core/db.php';
 if (
     $_POST
     && isset($_POST['files_list'])
+    && !empty($_POST['files_list'])
+    && isset($_POST['parent_folder__id'])
+    && !empty($_POST['parent_folder__id'])
     && $_COOKIE
     && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
     && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])
@@ -26,10 +29,7 @@ if (
     }
 
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
-    $parent_folder__id = 1;
-    if (isset($_POST['parent_folder__id'])) {
-        $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
-    }
+    $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
 
     $files = Opencloud__Db_Get_files($mysql, $user__id, $parent_folder__id);
     if ($files) {
@@ -152,14 +152,6 @@ if (
 ) {
     // open connection
     $mysql = Opencloud__Db_connect(HOST, USER, PASSWORD, DATABASE);
-    /**
-     * Security check
-     */
-    if (!Opencloud__Db_check_login($mysql)) {
-        http_response_code(401);
-        print 'You cannot see files.';
-        return false;
-    }
 
     // filter input
     $public_link = filter_input(INPUT_GET, 'public_link', FILTER_SANITIZE_STRING);
