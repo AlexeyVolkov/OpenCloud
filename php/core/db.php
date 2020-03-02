@@ -105,18 +105,18 @@ if (!function_exists('Opencloud__Db_Get_files')) {
         INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
         WHERE
             `files`.`user_id` = ? AND `files`.`parent_folder__id` = ?;
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
 
             /* bind parameters for markers */
-            $stmt->bind_param("ii", $user_id, $parent_folder_id);
+            $stmt->bind_param("ii", $user_id, $parent_folder_id) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__string, $type, $size);
+            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__string, $type, $size) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch values */
             while ($stmt->fetch()) {
@@ -131,14 +131,14 @@ if (!function_exists('Opencloud__Db_Get_files')) {
                     'size' => htmlentities($size, ENT_QUOTES | ENT_IGNORE, "UTF-8")
                 );
             }
-            if (0 == $stmt->num_rows) {
+            if ($upload_date) {
+                $files_showing = true;
+            } else {
                 $files[0]['error_text'] = 'There are '
                     . htmlentities($stmt->num_rows, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
                     ' files [user_id:'
                     . htmlentities($user_id, ENT_QUOTES | ENT_IGNORE, "UTF-8") .
                     ']';
-            } else {
-                $files_showing = true;
             }
             /* close statement */
             $stmt->close();
@@ -190,17 +190,17 @@ if (!function_exists('Opencloud__Db_Get_file')) {
         WHERE
             `files`.`user_id` = ? AND `files`.`id` = ? AND `files`.`type` = 1
         LIMIT 1;
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("ii", $user_id, $file__id);
+            $stmt->bind_param("ii", $user_id, $file__id) or trigger_error($stmt->error, E_USER_ERROR);
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* bind result variables */
-            $stmt->bind_result($upload_date, $real_name, $hash__name, $size, $type);
+            $stmt->bind_result($upload_date, $real_name, $hash__name, $size, $type) or trigger_error($stmt->error, E_USER_ERROR);
             /* fetch values */
-            $stmt->fetch();
+            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
             if ($upload_date) {
                 $file = array(
                     'upload_date' => htmlentities($upload_date, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
@@ -281,7 +281,7 @@ if (!function_exists('Opencloud__Db_put_file')) {
             VALUES(
                 NULL,
                 NOW(), ?, ?, ?, ?, ?, ?, ?, ?);
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
@@ -295,9 +295,9 @@ if (!function_exists('Opencloud__Db_put_file')) {
                 $status__id,
                 $size,
                 $parent_folder__id
-            );
+            ) or trigger_error($stmt->error, E_USER_ERROR);
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* close statement */
             $stmt->close();
 
@@ -316,7 +316,6 @@ if (!function_exists('Opencloud__Db_put_file')) {
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';
             print '<hr></pre>';
         }
-
         return $file_uploaded;
     }
 }
@@ -339,16 +338,16 @@ if (!function_exists('Opencloud__Db_get_extension_id')) {
         if ($stmt = $mysqli->prepare("SELECT `id` FROM `extensions` WHERE `type`=? LIMIT 1;")) {
 
             /* bind parameters for markers */
-            $stmt->bind_param("s", $extension__string);
+            $stmt->bind_param("s", $extension__string) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
 
             /* bind result variables */
-            $stmt->bind_result($extension__id);
+            $stmt->bind_result($extension__id) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch();
+            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
 
             /* close statement */
             $stmt->close();
@@ -383,9 +382,9 @@ if (!function_exists('Opencloud__Db_put_extension')) {
             "INSERT INTO `extensions` (`id`, `type`) VALUES (NULL, ?);"
         )) {
             /* bind parameters for markers */
-            $stmt->bind_param("s", $extension__string);
+            $stmt->bind_param("s", $extension__string) or trigger_error($stmt->error, E_USER_ERROR);
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* close statement */
             $stmt->close();
 
@@ -423,21 +422,20 @@ if (!function_exists('Opencloud__Db_put_folder')) {
                 `type`
             )
             VALUES(NULL, NOW(), ?, ?, ?, 2);
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
             $stmt->bind_param("iis", $add_folder__user_id, $parent_folder__id, $add_folder__name);
             /* execute query */
-            $stmt->execute();
-            /* close statement */
-            $stmt->close();
-
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             $answer[] = array(
                 'text' => 'Folder was successfully added',
                 'code' => 200,
                 'status' => true
             );
+            /* close statement */
+            $stmt->close();
         } else {
             print 'Debug Info<hr><pre>';
             print 'Cannot prepare statement @ Opencloud__Db_put_folder' . '<br>';
@@ -464,16 +462,16 @@ if (!function_exists('Opencloud__Db_get_extension_type')) {
         if ($stmt = $mysqli->prepare("SELECT `type` FROM `extensions` WHERE `id`=? LIMIT 1;")) {
 
             /* bind parameters for markers */
-            $stmt->bind_param("s", $extension__id);
+            $stmt->bind_param("s", $extension__id) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
 
             /* bind result variables */
-            $stmt->bind_result($extension__type);
+            $stmt->bind_result($extension__type) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch();
+            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
             if (1 < strlen($extension__type)) {
                 $return_extension__type = $extension__type;
             }
@@ -509,20 +507,20 @@ if (!function_exists('Opencloud__Db_get_filePathById')) {
             WHERE
                 `files`.`id` = ? AND `files`.`user_id` = ?
             LIMIT 1;
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("ii", $remove_file__id, $user_id);
+            $stmt->bind_param("ii", $remove_file__id, $user_id) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
 
             /* bind result variables */
-            $stmt->bind_result($db_path);
+            $stmt->bind_result($db_path) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch();
+            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
             if (1 < strlen($db_path)) {
                 $return_path = $db_path;
             }
@@ -555,13 +553,13 @@ if (!function_exists('Opencloud__Db_delete_file')) {
                 `files`
             WHERE
                 `files`.`id` = ? AND `files`.`user_id` = ?;
-        SQL;
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("ii", $remove_file__id, $user_id);
+            $stmt->bind_param("ii", $remove_file__id, $user_id) or trigger_error($stmt->error, E_USER_ERROR);
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* close statement */
             $stmt->close();
 
@@ -594,15 +592,15 @@ if (!function_exists('Opencloud__Db_login')) {
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc), in our case the username is a string so we use "s"
             // if check_login           
-            $stmt->bind_param('s', $usernamePOST);
+            $stmt->bind_param('s', $usernamePOST) or trigger_error($stmt->error, E_USER_ERROR);
 
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             // Store the result so we can check if the account exists in the database.
-            $stmt->store_result();
+            $stmt->store_result() or trigger_error($stmt->error, E_USER_ERROR);
 
             if ($stmt->num_rows > 0) {
                 $stmt->bind_result($id, $password);
-                $stmt->fetch();
+                $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
                 // Account exists, now we verify the password.
                 // Note: remember to use password_hash in your registration file to store the hashed passwords.
                 if (password_verify($passwordPOST, $password)) {
@@ -701,13 +699,13 @@ if (!function_exists('Opencloud__Db_rename')) {
             `real_name` = ?
         WHERE
             `files`.`id` = ? AND `files`.`user_id` = ?;
-        SQL;
+SQL;
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
-            $stmt->bind_param('sii', $file__name, $file__id, $user__id);
-            $stmt->execute();
+            $stmt->bind_param('sii', $file__name, $file__id, $user__id) or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             // Store the result so we can check if it exists in the database.
-            $stmt->store_result();
+            $stmt->store_result() or trigger_error($stmt->error, E_USER_ERROR);
             // if anything was updated
             if ($stmt->affected_rows > 0) {
                 $file_renamed = true;
@@ -755,15 +753,15 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
             `files`
         WHERE
             `user_id` = ? AND `id` = ?
-        LIMIT 1
-        SQL;
+        LIMIT 1;
+SQL;
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
-            $stmt->bind_param('ii', $user__id, $file__id);
-            $stmt->execute();
+            $stmt->bind_param('ii', $user__id, $file__id) or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* bind result variables */
-            $stmt->bind_result($file__name);
-            $stmt->fetch();
+            $stmt->bind_result($file__name) or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
             /* close statement */
             $stmt->close();
         } else {
@@ -804,8 +802,8 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
         $sql = 'CALL selectInsertPublicLink(?, ?, ?);';
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
-            $stmt->bind_param('iis', $file__id, $user__id, $public_link);
-            $stmt->execute();
+            $stmt->bind_param('iis', $file__id, $user__id, $public_link) or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* close statement */
             $stmt->close();
         } else {
@@ -850,16 +848,15 @@ if (!function_exists('Opencloud__Db_Get_Public_file')) {
             WHERE
                 `public_links`.`link` = ?
             LIMIT 1;
-        SQL;
-
+SQL;
         /* create a prepared statement */
         if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("s", $public_link);
+            $stmt->bind_param("s", $public_link) or trigger_error($stmt->error, E_USER_ERROR);
             /* execute query */
-            $stmt->execute();
+            $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* bind result variables */
-            $stmt->bind_result($real_name, $hash__name, $type);
+            $stmt->bind_result($real_name, $hash__name, $type) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch values */
             $stmt->fetch();

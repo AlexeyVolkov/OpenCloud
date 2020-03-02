@@ -53,3 +53,19 @@ readfile($hashed__path);
 ## Files
 
 -   DB dump - `open_cloud.sql`
+
+## Hacks
+
+Manually add:
+
+```sql
+--
+-- Dumping data for table `extensions`
+--
+
+INSERT INTO `extensions` (`
+id`,
+`type
+`, `name`, `description`) VALUES
+(0, 'folder', '', '');
+```

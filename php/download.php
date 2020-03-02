@@ -50,7 +50,11 @@ if (
         echo json_encode($files);
     } else {
         http_response_code(400);
-        print 'Cannot get files';
+        print 'Debug Info<hr><pre>';
+        print 'Cannot get files' . '<br>';
+        print 'user__id:' . htmlspecialchars($user__id) . '<br>';
+        print 'parent_folder__id:' . htmlspecialchars($parent_folder__id) . '<br>';
+        print '<hr></pre>';
     }
     Opencloud__Db_close($mysql);
 }

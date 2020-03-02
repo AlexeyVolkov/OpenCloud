@@ -68,10 +68,12 @@ if (
         if ($file_uploaded && !Opencloud__exist($hash__path, TARGET_DIR)) {
             if (Opencloud__upload($file, $hash__path)) {
                 http_response_code(200);
-                print ' File is Uploaded! ';
+                print 'File is Uploaded! ';
             } else {
                 print 'Cannot upload file or this file already exists';
             }
+        } else {
+            print 'Cannot upload file or this file already exists - 2';
         }
     }
     Opencloud__Db_close($mysql);
@@ -115,6 +117,8 @@ if (
         // output result
         header('Content-Type: application/json');
         echo json_encode($answer);
+    } else {
+        print 'Cannot add folder';
     }
     // close connection
     Opencloud__Db_close($mysql);
