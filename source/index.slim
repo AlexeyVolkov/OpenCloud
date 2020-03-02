@@ -48,31 +48,28 @@ html lang="en"
                             dt.form__dt
                             dd.form__dd
                                 input type="hidden" name="parent_folder__id" value="1"/
-                                input.form__button type="submit" name='submit'
+                                input.form__button type="submit" name='submit' value="+ Upload File"
             .row
                 table.row__block.table.files.block_private
                     caption.table__caption.screen-reader-text Your Files
                     colgroup.table__colgroup
                         col.table__col.table__col-70
                         col.table__col.table__col-10
-                        col.table__col.table__col-10
-                        col.table__col.table__col-10
+                        col.table__col.table__col-20
                     thead.table__thead
                         tr.table__tr
                             th.table__th Name
-                            th.table__th Rename
-                            th.table__th Remove
-                            th.table__th Public
+                            th.table__th Type
+                            th.table__th Actions
                     tfoot.table__tfoot
                         tr.table__tr
                             th.table__th Name
-                            th.table__th Rename
-                            th.table__th Remove
-                            th.table__th Public
+                            th.table__th Type
+                            th.table__th Actions
                     tbody.table__tbody
             .row
                 form.form.row__block.block_private
-                    button.form__button#add_folder type="button" data-folder_id="1" Add Folder
+                    button.form__button#add_folder type="button" data-folder_id="1" &#x2795&#x1F4C2 Add Folder
         footer.row.footer.block_private
             p.row__block
                 a.link href="php/auth.php?logout=true" title="System won't identify you" Log Out

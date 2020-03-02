@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 27, 2020 at 03:43 PM
+-- Generation Time: Mar 02, 2020 at 11:22 AM
 -- Server version: 10.4.8-MariaDB
 -- PHP Version: 7.3.11
 
@@ -21,6 +21,28 @@ SET time_zone = "+00:00";
 --
 -- Database: `open_cloud`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `selectInsertPublicLink` (IN `file__id_in` INT, IN `user__id_in` INT, IN `link_in` VARCHAR(255))  BEGIN
+    IF NOT EXISTS
+        (
+        SELECT
+            `id`
+        FROM
+            `public_links`
+        WHERE
+            `public_links`.`file__id` = file__id_in AND `public_links`.`link` = link_in
+        LIMIT 1
+    ) THEN
+INSERT INTO `public_links`(`id`, `link`, `file__id`)
+VALUES(NULL, link_in, file__id_in) ; 
+END IF ;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -52,20 +74,20 @@ CREATE TABLE `files` (
   `extension__id` int(11) NOT NULL,
   `status__id` int(11) NOT NULL,
   `size` int(11) NOT NULL COMMENT 'Bytes',
-  `parent_folder__id` int(11) NOT NULL DEFAULT 0
+  `parent_folder__id` int(11) NOT NULL DEFAULT 1,
+  `type` int(11) NOT NULL DEFAULT 1 COMMENT '1 - file; 2 - folder'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `folders`
+-- Table structure for table `public_links`
 --
 
-CREATE TABLE `folders` (
+CREATE TABLE `public_links` (
   `id` int(11) NOT NULL,
-  `parent_folder_id` int(11) NOT NULL DEFAULT 0,
-  `user__id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `link` varchar(255) NOT NULL,
+  `file__id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -106,9 +128,9 @@ ALTER TABLE `files`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `folders`
+-- Indexes for table `public_links`
 --
-ALTER TABLE `folders`
+ALTER TABLE `public_links`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -134,9 +156,9 @@ ALTER TABLE `files`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `folders`
+-- AUTO_INCREMENT for table `public_links`
 --
-ALTER TABLE `folders`
+ALTER TABLE `public_links`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

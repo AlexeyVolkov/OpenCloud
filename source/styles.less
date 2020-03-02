@@ -7,6 +7,21 @@
 @import "less/table.less";
 
 body {
-  font-family: @arial;
-  line-height: 1.4;
+	font-family: @arial;
+	line-height: 1.4;
+}
+.table__td,
+.table__th {
+	&:nth-child(1) {
+		// File
+		text-align: left;
+	}
+	&:nth-child(2) {
+		// Type
+		text-align: center;
+	}
+	&:nth-child(3) {
+		// Actions
+		text-align: right;
+	}
 }

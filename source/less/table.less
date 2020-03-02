@@ -11,9 +11,13 @@ Fixed Table Layouts
 
 .table {
 	table-layout: fixed;
-	width: 80%;
+	width: 100%;
 	white-space: nowrap;
 	border-spacing: 0;
+
+	@media (min-width: @ipad) {
+		width: 80%;
+	}
 }
 .table__thead,
 .table__tfoot {

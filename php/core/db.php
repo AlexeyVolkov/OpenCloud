@@ -92,15 +92,16 @@ if (!function_exists('Opencloud__Db_Get_files')) {
         // GET all the files and folders
         $sql = <<< SQL
         SELECT
-            `upload_date`,
-            `user_id`,
-            `real_name`,
-            `id`,
-            `hash__name`,
-            `extension__id`,
-            `type`
+            `files`.`upload_date`,
+            `files`.`user_id`,
+            `files`.`real_name`,
+            `files`.`id`,
+            `files`.`hash__name`,
+            `extensions`.`type`,
+            `files`.`type`
         FROM
             `files`
+        INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
         WHERE
             `files`.`user_id` = ? AND `files`.`parent_folder__id` = ?;
         SQL;
@@ -114,7 +115,7 @@ if (!function_exists('Opencloud__Db_Get_files')) {
             $stmt->execute();
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__id, $type);
+            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__string, $type);
 
             /* fetch values */
             while ($stmt->fetch()) {
@@ -124,7 +125,7 @@ if (!function_exists('Opencloud__Db_Get_files')) {
                     'real_name' => htmlentities($real_name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'id' => htmlentities($id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'extension__id' => htmlentities($extension__id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'extension__string' => htmlentities($extension__string, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8")
                 );
             }

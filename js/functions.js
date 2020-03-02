@@ -123,30 +123,29 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
                 row.className = 'table__tr';
 
                 // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
-                let cell2 = row.insertCell(0);
-                let cell3 = row.insertCell(1);
-                let cell4 = row.insertCell(2);
-                let cell5 = row.insertCell(3);
-
+                let cell1 = row.insertCell(0);// Name
+                let cell2 = row.insertCell(1);// Type
+                let cell3 = row.insertCell(2);// Actions
+                // css class
+                cell1.className = 'table__td';
                 cell2.className = 'table__td';
                 cell3.className = 'table__td';
-                cell4.className = 'table__td';
-                cell5.className = 'table__td';
 
                 // Add some text to the new cells:
                 // cell1.innerHTML = element['upload_date'];
                 if (2 == element['type']) {// folder
-                    cell2.innerHTML = '<a href="#folder' +
+                    cell1.innerHTML = '<a href="#folder' +
                         element['id'] + '" class="link link_folder" data-folder__id="' +
-                        element['id'] + '" data-parent_folder_id="' + folder_id + '">' + element['real_name'] + '</a>';
+                        element['id'] + '" data-parent_folder_id="' + folder_id + '">&#x1F4C1' + element['real_name'] + '</a>';
                 } else if (1 == element['type']) {// file
-                    cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
+                    cell1.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
-                cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
-                cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
+                cell2.innerHTML = element['extension__string'];
+                cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '" title="Rename "' + element['real_name'] + '>&#x1F504;</a>';
+                cell3.innerHTML += '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">&#x274C;</a>';
                 if (1 == element['type']) {// file
-                    cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
+                    cell3.innerHTML += '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">&#x1F517;</a>';
                 }
             });
         } else {
@@ -160,12 +159,12 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
         row.className = 'table__tr';
         // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
         let cell1 = row.insertCell(0);
-        cell1.className = 'table__td';
+        let cell2 = row.insertCell(1);
+        cell1.className, cell2.className = 'table__td';
         cell1.innerHTML = '<a href="#folderBack' +
             parent_folder_id + '" class="link link_folder" data-folder__id="' +
-            parent_folder_id + '">/..</a>';
-
-
+            parent_folder_id + '" title="Previous folder">&#x2934;</a>';
+        cell2.innerHTML = 'Go Back';
 
         // run content-rely code
         runAfterJSReady();
