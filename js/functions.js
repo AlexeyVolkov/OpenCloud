@@ -149,24 +149,26 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
                     cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
                 }
             });
-            // Root Folder link
-            // Create an empty <tr> element and add it to the 1st position of the table:
-            let row = tableFilesElem.insertRow(0);
-            row.className = 'table__tr';
-            // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
-            let cell1 = row.insertCell(0);
-            cell1.className = 'table__td';
-            cell1.innerHTML = '<a href="#folderBack' +
-                parent_folder_id + '" class="link link_folder" data-folder__id="' +
-                parent_folder_id + '">/..</a>';
-
-            // run content-rely code
-            runAfterJSReady();
         } else {
             // We reached our target server, but it returned an error
             // or zero files found
-            return false;
+            // return false;
         }
+        // Root Folder link
+        // Create an empty <tr> element and add it to the 1st position of the table:
+        let row = tableFilesElem.insertRow(0);
+        row.className = 'table__tr';
+        // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+        let cell1 = row.insertCell(0);
+        cell1.className = 'table__td';
+        cell1.innerHTML = '<a href="#folderBack' +
+            parent_folder_id + '" class="link link_folder" data-folder__id="' +
+            parent_folder_id + '">/..</a>';
+
+
+
+        // run content-rely code
+        runAfterJSReady();
     };
     if (loggedin()) {
         request.send(formData);
