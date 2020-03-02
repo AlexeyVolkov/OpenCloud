@@ -138,7 +138,7 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
                 if (2 == element['type']) {// folder
                     cell2.innerHTML = '<a href="#folder' +
                         element['id'] + '" class="link link_folder" data-folder__id="' +
-                        element['id'] + '" data-parent_folder_id="' + parent_folder_id + '">' + element['real_name'] + '</a>';
+                        element['id'] + '" data-parent_folder_id="' + folder_id + '">' + element['real_name'] + '</a>';
                 } else if (1 == element['type']) {// file
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
@@ -230,7 +230,7 @@ function renameLinkPrompt(renameLinksQuery = '.link_rename') {
 /**
  * New Folder Event
  */
-function handleAddFolder(addFolderQuery = '.button_add-folder') {
+function handleAddFolder(addFolderQuery = '#add_folder') {
     // grab reference to form
     const buttonElem = document.querySelector(addFolderQuery);
     // if the form exists
@@ -238,7 +238,6 @@ function handleAddFolder(addFolderQuery = '.button_add-folder') {
         console.debug("Cannot find button: " + addFolderQuery);
         return;
     }
-
     buttonElem.addEventListener('click', function (event) {
         let add_folder__name = prompt("New Folder Name", 'New Folder');
         document.body.style.cursor = 'progress';
@@ -253,7 +252,7 @@ function handleAddFolder(addFolderQuery = '.button_add-folder') {
         // 1. form request
         let formData = new FormData();
         formData.append("add_folder", "true");
-        formData.append("add_folder__name", add_folder__name);
+        formData.append("add_folder__name", add_folder__name); formData.append("parent_folder__id", buttonElem.dataset.folder_id);
         let url = 'php/upload.php';
         // 2. send request
         var request = new XMLHttpRequest();
@@ -447,10 +446,10 @@ function folderLink(folderLinksQuery = '.link_folder') {
         folderLinkElem.addEventListener('click', function (e) {
             e.preventDefault();
 
-
             // refresh Table
             refreshTable('.files tbody', folderLinkElem.dataset.folder__id, folderLinkElem.dataset.parent_folder_id);
-            // add ID to Upload form
+
+            // Add Parent Folder ID to Upload form
             let formQuery = '.upload';
             // grab reference to form
             const formUploadElem = document.querySelector(formQuery);
@@ -460,6 +459,17 @@ function folderLink(folderLinksQuery = '.link_folder') {
                 return;
             }
             formUploadElem['parent_folder__id'].value = folderLinkElem.dataset.folder__id;
+
+            // Add Parent Folder ID to Add Folder button
+            let addFolderQuery = '#add_folder';
+            // grab reference to form
+            const buttonElem = document.querySelector(addFolderQuery);
+            // if the form exists
+            if (!buttonElem || null == buttonElem || undefined == buttonElem) {
+                console.debug("Cannot find button: " + addFolderQuery);
+                return;
+            }
+            buttonElem.dataset.folder_id = folderLinkElem.dataset.folder__id;
 
             startProgress();
         });

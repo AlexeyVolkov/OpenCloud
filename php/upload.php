@@ -80,6 +80,8 @@ if (
     && isset($_POST['add_folder'])
     && !empty($_POST['add_folder'])
     && isset($_POST['add_folder__name'])
+    && isset($_POST['parent_folder__id'])
+    && !empty($_POST['parent_folder__id'])
     && $_COOKIE
     && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
     && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])
@@ -101,13 +103,17 @@ if (
     }
 
     $add_folder__name = filter_input(INPUT_POST, 'add_folder__name', FILTER_SANITIZE_STRING);
+    $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
     $add_folder__user_id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
     // add folder
-    $answer = Opencloud__Db_put_folder($mysql, $add_folder__name,    $add_folder__user_id);
+    $answer = Opencloud__Db_put_folder($mysql, $add_folder__name, $add_folder__user_id, $parent_folder__id);
 
-    // output result
-    header('Content-Type: application/json');
-    echo json_encode($answer);
+    if ($answer) {
+        http_response_code(200);
+        // output result
+        header('Content-Type: application/json');
+        echo json_encode($answer);
+    }
     // close connection
     Opencloud__Db_close($mysql);
 }

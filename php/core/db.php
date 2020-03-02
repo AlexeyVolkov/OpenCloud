@@ -375,20 +375,28 @@ if (!function_exists('Opencloud__Db_put_folder')) {
     /**
      * TODO: check file`s hashes, not names
      */
-    function Opencloud__Db_put_folder($mysqli, $add_folder__name,    $add_folder__user_id)
+    function Opencloud__Db_put_folder($mysqli, $add_folder__name,    $add_folder__user_id, $parent_folder__id)
     {
         $answer = false;
         $add_folder__name = filter_var(trim($add_folder__name), FILTER_SANITIZE_STRING);
+        $parent_folder__id = filter_var(trim($parent_folder__id), FILTER_SANITIZE_NUMBER_INT);
         $add_folder__user_id = filter_var(trim($add_folder__user_id), FILTER_SANITIZE_NUMBER_INT);
 
-        $parent_folder_id = 0;
-
+        $sql = <<<SQL
+            INSERT INTO `files`(
+                `id`,
+                `upload_date`,
+                `user_id`,
+                `parent_folder__id`,
+                `real_name`,
+                `type`
+            )
+            VALUES(NULL, NOW(), ?, ?, ?, 2);
+        SQL;
         /* create a prepared statement */
-        if ($stmt = $mysqli->prepare(
-            "INSERT INTO `folders` (`id`, `parent_folder_id`, `user__id`, `name`) VALUES (NULL, ?, ?, ?);"
-        )) {
+        if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("iis", $parent_folder_id, $add_folder__user_id, $add_folder__name);
+            $stmt->bind_param("iis", $add_folder__user_id, $parent_folder__id, $add_folder__name);
             /* execute query */
             $stmt->execute();
             /* close statement */
@@ -402,7 +410,7 @@ if (!function_exists('Opencloud__Db_put_folder')) {
         } else {
             print 'Debug Info<hr><pre>';
             print 'Cannot prepare statement @ Opencloud__Db_put_folder' . '<br>';
-            print 'parent_folder_id:' . htmlspecialchars($parent_folder_id) . '<br>';
+            print 'parent_folder__id:' . htmlspecialchars($parent_folder__id) . '<br>';
             print 'add_folder__user_id:' . htmlspecialchars($add_folder__user_id) . '<br>';
             print 'add_folder__name:' . htmlspecialchars($add_folder__name) . '<br>';
             print 'mysqli->error:' . htmlspecialchars($mysqli->error) . '<br>';

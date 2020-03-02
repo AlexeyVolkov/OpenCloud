@@ -9,65 +9,70 @@ html lang="en"
         meta content=("Upload & Download files") name="description" /
         script src="script.js"
     body
-        main.row
-            form.form.row__block.block_public#login action="php/auth.php" method="post"
-                fieldset.form__fieldset
-					legend.form__legend Login
-					dl.form-group
-						dt.form__dt
-						    label.form__label for="username"
-							    | Account:
-						dd.form__dd
-							input.form__input autocomplete="username" id="username" maxlength="25"							         minlength="1" name="username" placeholder="alex23" required="true"							         title="Please, input your Account" type="text"
-							small.form__text_muted.form__text_small
-								| Login ID
-					dl.form-group
-						dt.form__dt
-							label.form__label for="password"
-								| Password:
-						dd.form__dd
-							input.form__input autocomplete="current-password" id="password" maxlength="75" minlength="1" name="password" placeholder="password" required="true" title="Please, input your Password" type="password"
-					dl.form-group
-						dt.form__dt
-						dd.form__dd
-							button.form__button name="submit__login" value="yes" type="submit"
-								| Log In
-							small.form__text_small.text_italic
-								| Both fields are required
+        main
+            .row
+                form.form.row__block.block_public#login action="php/auth.php" method="post"
+                    fieldset.form__fieldset
+                        legend.form__legend Login
+                        dl.form-group
+                            dt.form__dt
+                                label.form__label for="username"
+                                    | Account:
+                            dd.form__dd
+                                input.form__input autocomplete="username" id="username" maxlength="25"							         minlength="1" name="username" placeholder="alex23" required="true"							         title="Please, input your Account" type="text"
+                                small.form__text_muted.form__text_small
+                                    | Login ID
+                        dl.form-group
+                            dt.form__dt
+                                label.form__label for="password"
+                                    | Password:
+                            dd.form__dd
+                                input.form__input autocomplete="current-password" id="password" maxlength="75" minlength="1" name="password" placeholder="password" required="true" title="Please, input your Password" type="password"
+                        dl.form-group
+                            dt.form__dt
+                            dd.form__dd
+                                button.form__button name="submit__login" value="yes" type="submit"
+                                    | Log In
+                                small.form__text_small.text_italic
+                                    | Both fields are required
 
-            form.form.row__block.upload.block_private#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
-                fieldset.form__fieldset
-                    legend.form__legend Upload Your File
-                    dl.form-group
-                        dt.form__dt
-                            label.form__label for="file" Choose the file to upload:
-                        dd.form__dd
-                            input.form__input#file type="file" name='files[]' multiple='true'
-                    dl.form-group
-                        dt.form__dt
-                        dd.form__dd
-                            input type="hidden" name="parent_folder__id" value="1"/
-                            input.form__button type="submit" name='submit'          
-            table.row__block.table.files.block_private
-                caption.table__caption.screen-reader-text Your Files
-                colgroup.table__colgroup
-				    col.table__col.table__col-70
-                    col.table__col.table__col-10
-				    col.table__col.table__col-10
-				    col.table__col.table__col-10
-                thead.table__thead
-                    tr.table__tr
-                        th.table__th Name
-                        th.table__th Rename
-                        th.table__th Remove
-                        th.table__th Public
-                tfoot.table__tfoot
-                    tr.table__tr
-                        th.table__th Name
-                        th.table__th Rename
-                        th.table__th Remove
-                        th.table__th Public
-                tbody.table__tbody
+                form.form.row__block.upload.block_private#upload_form method='post' action='php/upload.php' enctype="multipart/form-data"
+                    fieldset.form__fieldset
+                        legend.form__legend Upload Your File
+                        dl.form-group
+                            dt.form__dt
+                                label.form__label for="file" Choose the file to upload:
+                            dd.form__dd
+                                input.form__input#file type="file" name='files[]' multiple='true'
+                        dl.form-group
+                            dt.form__dt
+                            dd.form__dd
+                                input type="hidden" name="parent_folder__id" value="1"/
+                                input.form__button type="submit" name='submit'
+            .row
+                table.row__block.table.files.block_private
+                    caption.table__caption.screen-reader-text Your Files
+                    colgroup.table__colgroup
+                        col.table__col.table__col-70
+                        col.table__col.table__col-10
+                        col.table__col.table__col-10
+                        col.table__col.table__col-10
+                    thead.table__thead
+                        tr.table__tr
+                            th.table__th Name
+                            th.table__th Rename
+                            th.table__th Remove
+                            th.table__th Public
+                    tfoot.table__tfoot
+                        tr.table__tr
+                            th.table__th Name
+                            th.table__th Rename
+                            th.table__th Remove
+                            th.table__th Public
+                    tbody.table__tbody
+            .row
+                form.form.row__block.block_private
+                    button.form__button#add_folder type="button" data-folder_id="1" Add Folder
         footer.row.footer.block_private
             p.row__block
                 a.link href="php/auth.php?logout=true" title="System won't identify you" Log Out

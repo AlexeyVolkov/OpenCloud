@@ -4,7 +4,7 @@ ready(function () {
     loginHandler();
     refreshTable();
     handleUploadForm();
-    // handleAddFolder();
+    handleAddFolder();
     unblockLogin(loggedin());
 
     endProgress();
