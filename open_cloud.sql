@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 02, 2020 at 11:22 AM
+-- Generation Time: Mar 02, 2020 at 03:46 PM
 -- Server version: 10.4.8-MariaDB
 -- PHP Version: 7.3.11
 
@@ -71,7 +71,7 @@ CREATE TABLE `files` (
   `hash__file` text NOT NULL,
   `user_id` int(11) NOT NULL,
   `real_name` text NOT NULL,
-  `extension__id` int(11) NOT NULL,
+  `extension__id` int(11) NOT NULL DEFAULT 0,
   `status__id` int(11) NOT NULL,
   `size` int(11) NOT NULL COMMENT 'Bytes',
   `parent_folder__id` int(11) NOT NULL DEFAULT 1,

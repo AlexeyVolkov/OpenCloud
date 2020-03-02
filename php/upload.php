@@ -13,6 +13,8 @@ if (
     && $_POST
     && isset($_POST['parent_folder__id'])
     && !empty($_POST['parent_folder__id'])
+    && isset($_POST['captcha'])
+    && 0 == $_POST['captcha']
     && $_COOKIE
     && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
     && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])

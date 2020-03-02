@@ -182,6 +182,7 @@ if (!function_exists('Opencloud__Db_Get_file')) {
             `upload_date`,
             `real_name`,
             `hash__name`,
+            `size`,
             `extensions`.`type`
         FROM
             `files`
@@ -197,7 +198,7 @@ if (!function_exists('Opencloud__Db_Get_file')) {
             /* execute query */
             $stmt->execute();
             /* bind result variables */
-            $stmt->bind_result($upload_date, $real_name, $hash__name, $type);
+            $stmt->bind_result($upload_date, $real_name, $hash__name, $size, $type);
             /* fetch values */
             $stmt->fetch();
             if ($upload_date) {
@@ -205,6 +206,7 @@ if (!function_exists('Opencloud__Db_Get_file')) {
                     'upload_date' => htmlentities($upload_date, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'real_name' => htmlentities($real_name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'size' => htmlentities($size, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8")
                 );
                 $file_showing = true;
@@ -262,12 +264,38 @@ if (!function_exists('Opencloud__Db_put_file')) {
         $parent_folder__id = filter_var(trim($parent_folder__id), FILTER_SANITIZE_NUMBER_INT);
         // set defaults
         $file_uploaded = false;
+
+        $sql = <<<SQL
+            INSERT INTO `files`(
+                `id`,
+                `upload_date`,
+                `hash__name`,
+                `hash__file`,
+                `user_id`,
+                `real_name`,
+                `extension__id`,
+                `status__id`,
+                `size`,
+                `parent_folder__id`
+            )
+            VALUES(
+                NULL,
+                NOW(), ?, ?, ?, ?, ?, ?, ?, ?);
+        SQL;
         /* create a prepared statement */
-        if ($stmt = $mysqli->prepare(
-            "INSERT INTO `files` (`id`, `upload_date`, `hash__name`, `hash__file`, `user_id`, `real_name`, `extension__id`, `status__id`, `size`, `parent_folder__id`) VALUES (NULL, NOW(), ?, ?, ?, ?, ?, ?, ?, ?);"
-        )) {
+        if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("ssisiiii", $hash__name, $hash__file, $user_id, $real_name, $extension__id, $status__id, $size, $parent_folder__id);
+            $stmt->bind_param(
+                "ssisiiii",
+                $hash__name,
+                $hash__file,
+                $user_id,
+                $real_name,
+                $extension__id,
+                $status__id,
+                $size,
+                $parent_folder__id
+            );
             /* execute query */
             $stmt->execute();
             /* close statement */
@@ -464,18 +492,28 @@ if (!function_exists('Opencloud__Db_get_extension_type')) {
 }
 
 if (!function_exists('Opencloud__Db_get_filePathById')) {
-    function Opencloud__Db_get_filePathById($mysqli, $remove_file__id)
+    function Opencloud__Db_get_filePathById($mysqli, $user_id, $remove_file__id)
     {
         // filter input
         $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
+        $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
 
         // set defaults
         $return_path = false;
 
+        $sql = <<<SQL
+            SELECT
+                `hash__name`
+            FROM
+                `files`
+            WHERE
+                `files`.`id` = ? AND `files`.`user_id` = ?
+            LIMIT 1;
+        SQL;
         /* create a prepared statement */
-        if ($stmt = $mysqli->prepare("SELECT `hash__name` FROM `files` WHERE `id`=? LIMIT 1;")) {
+        if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("i", $remove_file__id);
+            $stmt->bind_param("ii", $remove_file__id, $user_id);
 
             /* execute query */
             $stmt->execute();
@@ -503,18 +541,25 @@ if (!function_exists('Opencloud__Db_get_filePathById')) {
 }
 
 if (!function_exists('Opencloud__Db_delete_file')) {
-    function Opencloud__Db_delete_file($mysqli, $remove_file__id)
+    function Opencloud__Db_delete_file($mysqli, $user_id, $remove_file__id)
     {
         // filter input
+        $user_id = filter_var(trim($user_id), FILTER_SANITIZE_NUMBER_INT);
         $remove_file__id = filter_var(trim($remove_file__id), FILTER_SANITIZE_NUMBER_INT);
         // set defaults
         $flag = false;
+
+        $sql = <<<SQL
+            DELETE
+            FROM
+                `files`
+            WHERE
+                `files`.`id` = ? AND `files`.`user_id` = ?;
+        SQL;
         /* create a prepared statement */
-        if ($stmt = $mysqli->prepare(
-            "DELETE FROM `files` WHERE `files`.`id` = ?;"
-        )) {
+        if ($stmt = $mysqli->prepare($sql)) {
             /* bind parameters for markers */
-            $stmt->bind_param("i", $remove_file__id);
+            $stmt->bind_param("ii", $remove_file__id, $user_id);
             /* execute query */
             $stmt->execute();
             /* close statement */
@@ -649,7 +694,14 @@ if (!function_exists('Opencloud__Db_rename')) {
         // set defaults
         $file_renamed = false;
         /* create a prepared statement */
-        $sql = 'UPDATE `files` SET `real_name` = ? WHERE `files`.`id` = ? AND `files`.`user_id` = ?;';
+        $sql = <<<SQL
+        UPDATE
+            `files`
+        SET
+            `real_name` = ?
+        WHERE
+            `files`.`id` = ? AND `files`.`user_id` = ?;
+        SQL;
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
             $stmt->bind_param('sii', $file__name, $file__id, $user__id);
@@ -696,7 +748,15 @@ if (!function_exists('Opencloud__Db_get_public_link')) {
         $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
         $file__name = false;
 
-        $sql = 'SELECT `real_name` FROM `files` WHERE `user_id` = ? AND `id` = ? LIMIT 1';
+        $sql = <<<SQL
+        SELECT
+            `real_name`
+        FROM
+            `files`
+        WHERE
+            `user_id` = ? AND `id` = ?
+        LIMIT 1
+        SQL;
         if ($stmt = $mysqli->prepare($sql)) {
             // Bind parameters (s = string, i = int, b = blob, etc)
             $stmt->bind_param('ii', $user__id, $file__id);

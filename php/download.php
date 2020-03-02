@@ -92,16 +92,20 @@ if (
     if ($file) {
         http_response_code(200);
         $hash__path = TARGET_DIR . $file['hash__name'];
-        $type = $file['type'];
-        header('Content-Type: ' . $type);
-        header("Content-disposition: attachment; filename=\"" . basename(htmlspecialchars($file['real_name'])) . "\"");
-        readfile($hash__path);
+        if (file_exists($hash__path)) {
+            $type = $file['type'];
+            header('Content-Type: ' . $type);
+            header('Content-disposition: attachment; filename="' . basename(htmlspecialchars($file['real_name'])) . '"');
+            header('Content-Length: ' . htmlspecialchars($file['size']));
+            readfile($hash__path);
+        }
     } else {
         http_response_code(400);
         print 'Cannot get file';
     }
 
     Opencloud__Db_close($mysql);
+    exit;
 }
 
 if (

@@ -33,9 +33,10 @@ if (
         header('Location: ' . htmlspecialchars(WEBSITE_ADDRESS));
         exit();
     }
+    $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
 
-    $file_path = Opencloud__Db_get_filePathById($mysql, $remove_file__id);
-    if ($file_path && Opencloud__Db_delete_file($mysql, $remove_file__id)) { // file info is deleted
+    $file_path = Opencloud__Db_get_filePathById($mysql, $user__id, $remove_file__id);
+    if ($file_path && Opencloud__Db_delete_file($mysql, $user__id, $remove_file__id)) { // file info is deleted
         // Opencloud__remove($file_path);
         // TODO: check if it's the last file in DB then delete
     }
