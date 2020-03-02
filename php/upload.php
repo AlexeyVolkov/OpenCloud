@@ -10,6 +10,9 @@ if (
     $_FILES
     && isset($_FILES[POST_FILE_FIELD])
     && !empty($_FILES[POST_FILE_FIELD])
+    && $_POST
+    && isset($_POST['parent_folder__id'])
+    && !empty($_POST['parent_folder__id'])
     && $_COOKIE
     && isset($_COOKIE[COOKIE__USER_LOGGED_IN])
     && !empty($_COOKIE[COOKIE__USER_LOGGED_IN])
@@ -33,6 +36,7 @@ if (
     $file_ary = Opencloud__reArrayFiles($_FILES[POST_FILE_FIELD]);
     // filter input
     $user__id = filter_input(INPUT_COOKIE, COOKIE__USER_ID, FILTER_SANITIZE_NUMBER_INT);
+    $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
 
     foreach ($file_ary as $file) {
         if (0 >= $file['size']) {
@@ -52,7 +56,6 @@ if (
         $extension__id = Opencloud__Db_get_extension_id($mysql, $file['type']);
         $status__id = 1; // 1 - existing; 0 - deleted
         $size = filesize($file['tmp_name']);
-        $parent_folder__id = 1; // 1 - root (default)
 
         // put file upload info to DB
         $file_uploaded = false;

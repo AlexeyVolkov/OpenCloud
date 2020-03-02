@@ -69,12 +69,13 @@ function handleUploadForm(formQuery = '.upload') {
 /**
  * Fill table with Files & Folders
  * 
- * @param {string} filesListQuery 
- * @param {string} parent_folder_id 
+ * @param {string} filesListQuery Path to Table
+ * @param {string} folder_id Folder to show
+ * @param {string} parent_folder_id Parent Folder of current one
  * 
  * @returns {void} Refresh table with Files
  */
-function refreshTable(filesListQuery = '.files tbody', parent_folder_id = 1) {
+function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_folder_id = 1) {
     if (!loggedin()) {
         console.warn('please, login to see your files');
         return;
@@ -94,7 +95,7 @@ function refreshTable(filesListQuery = '.files tbody', parent_folder_id = 1) {
     // 1. form request
     let formData = new FormData();
     formData.append("files_list", "true");
-    formData.append("parent_folder__id", parent_folder_id);
+    formData.append("parent_folder__id", folder_id);
     let url = 'php/download.php';
     // 2. send request
     var request = new XMLHttpRequest();
@@ -134,20 +135,30 @@ function refreshTable(filesListQuery = '.files tbody', parent_folder_id = 1) {
 
                 // Add some text to the new cells:
                 // cell1.innerHTML = element['upload_date'];
-                if (2 == element['type']) {
+                if (2 == element['type']) {// folder
                     cell2.innerHTML = '<a href="#folder' +
                         element['id'] + '" class="link link_folder" data-folder__id="' +
-                        element['id'] + '">' + element['real_name'] + '</a>';
-                } else if (1 == element['type']) {
+                        element['id'] + '" data-parent_folder_id="' + parent_folder_id + '">' + element['real_name'] + '</a>';
+                } else if (1 == element['type']) {// file
                     cell2.innerHTML = '<a href="php/download.php?download_file__id=' +
                         element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
                 }
                 cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '">Rename</a>';
                 cell4.innerHTML = '<a href="php/remove.php?remove_file__id=' + element['id'] + '" class="link link_remove" data-file_id="' + element['id'] + '" data-real_name="' + element['real_name'] + '" title="Remove ' + element['real_name'] + '">Remove</a>';
-                if (1 == element['type']) {
+                if (1 == element['type']) {// file
                     cell5.innerHTML = '<a href="#public_link__id=' + element['id'] + '" class="link link_public" data-file__id="' + element['id'] + '" title="Get Public Link for ' + element['real_name'] + '">Public Link</a>';
                 }
             });
+            // Root Folder link
+            // Create an empty <tr> element and add it to the 1st position of the table:
+            let row = tableFilesElem.insertRow(0);
+            row.className = 'table__tr';
+            // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+            let cell1 = row.insertCell(0);
+            cell1.className = 'table__td';
+            cell1.innerHTML = '<a href="#folderBack' +
+                parent_folder_id + '" class="link link_folder" data-folder__id="' +
+                parent_folder_id + '">/..</a>';
 
             // run content-rely code
             runAfterJSReady();
@@ -436,7 +447,19 @@ function folderLink(folderLinksQuery = '.link_folder') {
         folderLinkElem.addEventListener('click', function (e) {
             e.preventDefault();
 
-            refreshTable('.files tbody', folderLinkElem.dataset.folder__id);
+
+            // refresh Table
+            refreshTable('.files tbody', folderLinkElem.dataset.folder__id, folderLinkElem.dataset.parent_folder_id);
+            // add ID to Upload form
+            let formQuery = '.upload';
+            // grab reference to form
+            const formUploadElem = document.querySelector(formQuery);
+            // if the form exists
+            if (!formUploadElem || null == formUploadElem || undefined == formUploadElem) {
+                console.debug("Cannot find form: " + formQuery);
+                return;
+            }
+            formUploadElem['parent_folder__id'].value = folderLinkElem.dataset.folder__id;
 
             startProgress();
         });
