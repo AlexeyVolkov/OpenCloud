@@ -98,7 +98,8 @@ if (!function_exists('Opencloud__Db_Get_files')) {
             `files`.`id`,
             `files`.`hash__name`,
             `extensions`.`type`,
-            `files`.`type`
+            `files`.`type`,
+            `files`.`size`
         FROM
             `files`
         INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
@@ -115,7 +116,7 @@ if (!function_exists('Opencloud__Db_Get_files')) {
             $stmt->execute();
 
             /* bind result variables */
-            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__string, $type);
+            $stmt->bind_result($upload_date, $user_idDB, $real_name, $id, $hash__name, $extension__string, $type, $size);
 
             /* fetch values */
             while ($stmt->fetch()) {
@@ -126,7 +127,8 @@ if (!function_exists('Opencloud__Db_Get_files')) {
                     'id' => htmlentities($id, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'hash__name' => htmlentities($hash__name, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'extension__string' => htmlentities($extension__string, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8")
+                    'type' => htmlentities($type, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                    'size' => htmlentities($size, ENT_QUOTES | ENT_IGNORE, "UTF-8")
                 );
             }
             if (0 == $stmt->num_rows) {

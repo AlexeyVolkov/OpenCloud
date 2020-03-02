@@ -1,6 +1,7 @@
 <?php
 require 'variables.php';
 require 'core/db.php';
+require 'core/core.php';
 
 if (
     $_POST
@@ -32,7 +33,18 @@ if (
     $parent_folder__id = filter_input(INPUT_POST, 'parent_folder__id', FILTER_SANITIZE_NUMBER_INT);
 
     $files = Opencloud__Db_Get_files($mysql, $user__id, $parent_folder__id);
+
     if ($files) {
+        // pretty output
+        foreach ($files as &$file) {
+            // file size
+            $file['size'] = Human_filesize($file['size']);
+            // upload date
+            $file['upload_date'] = strtotime($file['upload_date']);
+            $file['upload_date'] = date('d.m.y', $file['upload_date']);
+        }
+        unset($file); // break the reference with the last element
+
         http_response_code(200);
         header('Content-Type: application/json');
         echo json_encode($files);

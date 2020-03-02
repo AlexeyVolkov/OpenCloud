@@ -16,6 +16,15 @@ function runRefresh() {
  */
 function startProgress() {
     document.body.style.cursor = 'progress';
+    let loadingQuery = '.block_loading';
+    // grab reference to form
+    const loadingElem = document.querySelector(loadingQuery);
+    // if the loadingElem exists
+    if (!loadingElem || null == loadingElem || undefined == loadingElem) {
+        console.debug("Cannot find loadingElem: " + loadingQuery);
+        return;
+    }
+    loadingElem.style.display = 'block';
 }
 /**
  * Informing that some proccess finished
@@ -24,6 +33,15 @@ function startProgress() {
  */
 function endProgress() {
     document.body.style.cursor = 'default';
+    let loadingQuery = '.block_loading';
+    // grab reference to form
+    const loadingElem = document.querySelector(loadingQuery);
+    // if the loadingElem exists
+    if (!loadingElem || null == loadingElem || undefined == loadingElem) {
+        console.debug("Cannot find loadingElem: " + loadingQuery);
+        return;
+    }
+    loadingElem.style.display = 'none';
 }
 /**
  * Run scripts after table refresh
@@ -55,7 +73,7 @@ function handleUploadForm(formQuery = '.upload') {
     formUploadElem.addEventListener('submit', (e) => {
         // on form submission, prevent default
         e.preventDefault();
-        document.body.style.cursor = 'progress';
+        startProgress();
         // AJAX Form Submit Framework
         console.debug('AJAX Form sent');
         if (loggedin()) {
@@ -138,8 +156,20 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
                         element['id'] + '" class="link link_folder" data-folder__id="' +
                         element['id'] + '" data-parent_folder_id="' + folder_id + '">&#x1F4C1' + element['real_name'] + '</a>';
                 } else if (1 == element['type']) {// file
-                    cell1.innerHTML = '<a href="php/download.php?download_file__id=' +
-                        element['id'] + '" class="link link_download" title="Download ' + element['real_name'] + '">' + element['real_name'] + '</a>';
+                    cell1.innerHTML = '\
+                    <div class="row_inline">\
+                        <a href="php/download.php?download_file__id=' + element['id']
+                        + '" class="link link_download" title="Download '
+                        + element['real_name']
+                        + '">'
+                        + element['real_name']
+                        + '</a>\
+                        <small class="form__text_small">'
+                        + element['upload_date']
+                        + ' — '
+                        + element['size']
+                        + '</small>\
+                    </div>';
                 }
                 cell2.innerHTML = element['extension__string'];
                 cell3.innerHTML = '<a href="#rename__file-' + element['id'] + '" class="link link_rename" data-file__id="' + element['id'] + '" data-file__name="' + element['real_name'] + '" title="Rename "' + element['real_name'] + '>&#x1F504;</a>';
@@ -165,6 +195,7 @@ function refreshTable(filesListQuery = '.files tbody', folder_id = 1, parent_fol
             parent_folder_id + '" class="link link_folder" data-folder__id="' +
             parent_folder_id + '" title="Previous folder">&#x2934;</a>';
         cell2.innerHTML = 'Go Back';
+        cell2.setAttribute("colspan", "2");
 
         // run content-rely code
         runAfterJSReady();
@@ -241,10 +272,10 @@ function handleAddFolder(addFolderQuery = '#add_folder') {
     }
     buttonElem.addEventListener('click', function (event) {
         let add_folder__name = prompt("New Folder Name", 'New Folder');
-        document.body.style.cursor = 'progress';
+        startProgress();
         if (!add_folder__name || null == add_folder__name || undefined == add_folder__name || 0 == add_folder__name.length) {
             console.debug('Empty new name');
-            document.body.style.cursor = 'default';
+            endProgress();
             return;
         }
         //
@@ -308,7 +339,7 @@ function loginHandler(formLoginQuery = '#login') {
     formLoginElem.addEventListener('submit', (e) => {
         // on form submission, prevent default
         e.preventDefault();
-        document.body.style.cursor = 'progress';
+        startProgress();
         // AJAX Form Submit Framework
         console.debug('Login Form sent via AJAX');
         AJAXSubmit(formLoginElem);
@@ -446,6 +477,7 @@ function folderLink(folderLinksQuery = '.link_folder') {
         // remove Links handler
         folderLinkElem.addEventListener('click', function (e) {
             e.preventDefault();
+            startProgress();
 
             // refresh Table
             refreshTable('.files tbody', folderLinkElem.dataset.folder__id, folderLinkElem.dataset.parent_folder_id);
@@ -471,8 +503,6 @@ function folderLink(folderLinksQuery = '.link_folder') {
                 return;
             }
             buttonElem.dataset.folder_id = folderLinkElem.dataset.folder__id;
-
-            startProgress();
         });
     });
 }
