@@ -3,15 +3,18 @@
 ## Overview
 
 -   [x] авторизация (каждый пользователь видит свои данные)
--   [ ] создание папок и подпапок
+-   [x] создание папок и подпапок
 -   [x] загрузка файлов
 -   [x] переименование / удаление файлов
 -   [x] скачивание файлов
--   [ ] генерация уникальной публичной ссылки на файл
+-   [x] генерация уникальной публичной ссылки на файл
 
 ## Time spent
 
+Total: 30 hours
+
 20 hours (24.02.2020 - 27.02.2020)
+10 hours (29.02.2020 - 02.03.2020)
 
 ## Live website
 
@@ -20,7 +23,7 @@
 ## Features
 
 -   Secure for Server side
--   100% Accessible
+-   99% Accessible (no URL memory)
 
 ## Main Work Flow
 
@@ -30,6 +33,7 @@
 
 ## Security
 
+1. Captcha honeypot.
 1. Passwords are hashed.
 1. Files have hashed names like `a384f074e91f07073cd1d71108c0de06`.
 1. This hash generates on uploading.
