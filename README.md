@@ -11,10 +11,10 @@
 
 ## Time spent
 
-Total: 30 hours
+Total: 38 hours
 
 20 hours (24.02.2020 - 27.02.2020)
-10 hours (29.02.2020 - 02.03.2020)
+18 hours (29.02.2020 - 03.03.2020)
 
 ## Live website
 
@@ -41,7 +41,7 @@ Total: 30 hours
 1. Downloading combines hash and real name:
 
 ```php
-header("Content-disposition: attachment;filename=$file['real_name']");
+header('Content-disposition: attachment;filename="$file['real_name']"');
 readfile($hashed__path);
 ```
 
@@ -69,3 +69,5 @@ id`,
 `, `name`, `description`) VALUES
 (0, 'folder', '', '');
 ```
+
+and `users`
