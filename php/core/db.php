@@ -50,6 +50,7 @@ if (!function_exists('Opencloud__Db_connect')) {
             print 'mysqli_connect_error:' . htmlspecialchars(mysqli_connect_error()) . '<br>';
             print '<hr></pre>';
         }
+        $mysqli->set_charset("utf8") or trigger_error(mysqli_connect_errno(), E_USER_ERROR);
         return $mysqli;
     }
 }
@@ -200,7 +201,7 @@ SQL;
             /* bind result variables */
             $stmt->bind_result($upload_date, $real_name, $hash__name, $size, $type) or trigger_error($stmt->error, E_USER_ERROR);
             /* fetch values */
-            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch();
             if ($upload_date) {
                 $file = array(
                     'upload_date' => htmlentities($upload_date, ENT_QUOTES | ENT_IGNORE, "UTF-8"),
@@ -347,7 +348,7 @@ if (!function_exists('Opencloud__Db_get_extension_id')) {
             $stmt->bind_result($extension__id) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch();
 
             /* close statement */
             $stmt->close();
@@ -471,7 +472,7 @@ if (!function_exists('Opencloud__Db_get_extension_type')) {
             $stmt->bind_result($extension__type) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch();
             if (1 < strlen($extension__type)) {
                 $return_extension__type = $extension__type;
             }
@@ -520,7 +521,7 @@ SQL;
             $stmt->bind_result($db_path) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch value */
-            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch();
             if (1 < strlen($db_path)) {
                 $return_path = $db_path;
             }
@@ -600,7 +601,7 @@ if (!function_exists('Opencloud__Db_login')) {
 
             if ($stmt->num_rows > 0) {
                 $stmt->bind_result($id, $password);
-                $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+                $stmt->fetch();
                 // Account exists, now we verify the password.
                 // Note: remember to use password_hash in your registration file to store the hashed passwords.
                 if (password_verify($passwordPOST, $password)) {
@@ -761,7 +762,7 @@ SQL;
             $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* bind result variables */
             $stmt->bind_result($file__name) or trigger_error($stmt->error, E_USER_ERROR);
-            $stmt->fetch() or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->fetch();
             /* close statement */
             $stmt->close();
         } else {
@@ -840,7 +841,8 @@ if (!function_exists('Opencloud__Db_Get_Public_file')) {
             SELECT
                 `files`.`real_name`,
                 `files`.`hash__name`,
-                `extensions`.`type`
+                `extensions`.`type`,
+                `files`.`size`
             FROM
                 `files`
             INNER JOIN `extensions` ON `files`.`extension__id` = `extensions`.`id`
@@ -856,7 +858,7 @@ SQL;
             /* execute query */
             $stmt->execute() or trigger_error($stmt->error, E_USER_ERROR);
             /* bind result variables */
-            $stmt->bind_result($real_name, $hash__name, $type) or trigger_error($stmt->error, E_USER_ERROR);
+            $stmt->bind_result($real_name, $hash__name, $type, $size) or trigger_error($stmt->error, E_USER_ERROR);
 
             /* fetch values */
             $stmt->fetch();
@@ -865,7 +867,8 @@ SQL;
                 $answer = array(
                     'real_name' => $real_name,
                     'hash__name' => $hash__name,
-                    'type' => $type
+                    'type' => $type,
+                    'size' => $size
                 );
             } else {
                 http_response_code(400);

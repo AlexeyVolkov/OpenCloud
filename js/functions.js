@@ -444,7 +444,7 @@ function publicLinkConfirm(publicLinksQuery = '.link_public') {
                         console.debug(formData);
                         return;
                     }
-                    alert(window.location.hostname + '/php/download.php?public_link=' + answer['public_link']);
+                    alert(window.location.protocol + '//' + window.location.hostname + window.location.pathname + 'php/download.php?public_link=' + answer['public_link']);
                     runRefresh();
                 } else {
                     console.debug('We reached our target server, but it returned an error');
